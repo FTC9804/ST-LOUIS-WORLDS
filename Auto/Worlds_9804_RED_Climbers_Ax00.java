@@ -11,32 +11,27 @@ import com.qualcomm.robotcore.hardware.Servo;
  *
  * Drives a predetermined set distance
  *
- * v1 3-12-16 at 7:21 pm Steve -- test code for far->near blue
- * v2 3-12-16 at 8:03 pm Steve -- test code for near->near blue with methods
- * v3 3-15-16 at 6:36 pm Steve -- test code with methods set up in competition layout
- * v4 3-15-16 at 8:06 pm Steve -- test code with methods mapped out
- * v5 3-20-16 at 11:40 pm Steve -- test code with updated methods based on Google Drive Notes
- * v6 3-20-16 at 12:57 pm Steve -- test code with updates comments for methods and variables
- * v7 3-21-16 at 4:26 pm Steve -- test code for running on the robot with logic checked
- * v8 3-22-16 at 1:33 pm Steve -- test code with "while(this.opModeIsActive())" loop
+ * v0 4-6-16 at 8:59 pm Steve, Etienne, & Bridget -- use Ax00 code from Oakland tournament
+ *
  *
  * SetUp:
- * Back left edge of second full box from the mountain on the blue side
+ * Back left edge of second full box from the mountain on the red side
  * Facing the shelter BACKWARDS
  *
- * Movement:
- * Drive for 1.5*2*sqrt(2)*12 = 50.9117 inches backwards with spin motors running
- * Spins CCW 90º
- * drive FORWARDS 24 inches
- * window wiper servo
- * drive FORWARDS 24 inches
  *
+ * Movement:
+ * Drive for 3*2*sqrt(2)*12 = 101.823 inches backwards with spin motors running
+ * Spins CCW 45º
+ * Release climbers
  *
  * GENERAL RULE:
  *  FWD: leftPower = midPower - driveSteering;
  *  BWD: leftPower = midPower + drive Steering
  *  CCW: positive
  *  CW: negative
+ *  CR Servos: 1 is CW, 0 is CCW, 0.5 is stopped
+ *  Heading = ABSOLUTE heading of the robot on the field
+ *  Distance = INCREMENTAL distance of the robot on the field
  *
  *
  * Configuration Info
@@ -70,7 +65,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  */
 
 
-public class Oak_9804_BLUE_Auto_NearFar_v8 extends LinearOpMode {
+public class Worlds_9804_RED_Climbers_Ax00 extends LinearOpMode {
 
     //drive motors
     //front is the side with the arms, back is the side with the spinners
@@ -85,18 +80,23 @@ public class Oak_9804_BLUE_Auto_NearFar_v8 extends LinearOpMode {
     Servo grabLeft;
     Servo grabRight;
 
-    //extra servo
+    //servo for moving the hopper
     Servo box;
 
-    Servo shelterDrop; //0.5
+    //servo to place climber in shelter
+    Servo shelterDrop;
 
+    //servo to unleash the hooks
     Servo hookPoles;
 
-    Servo ziplineBar;   //0
+    //servo to launch the wings to hit the zipline climbers
+    Servo ziplineBar;
 //    Servo allClear;     //not used
 
     //servo to push away debris from ramp
     Servo windowWiper;
+
+    boolean runMe = true;                   //boolean for exiting code while loop
 
     double midPower;                        //the middle power for driving that we add and subtract calculates values from
     int targetHeading;                      //target heading the gyro will go to
@@ -133,6 +133,9 @@ public class Oak_9804_BLUE_Auto_NearFar_v8 extends LinearOpMode {
     double hookPolesInitialize = 0.51;
     double hookPolesPosition = hookPolesInitialize;
     double shelterDropInitialize = 0.5;
+    double shelterDropRelease = 0.87;
+    double shelterDropRetract = 0.2;
+    double shelterScoreTime;
     double shelterDropPosition = shelterDropInitialize;
     double ziplineBarInitialize = 0;
     double ziplineBarPosition = ziplineBarInitialize;
@@ -148,10 +151,10 @@ public class Oak_9804_BLUE_Auto_NearFar_v8 extends LinearOpMode {
 
 
         //gives name of drive motors
-        driveLeftBack = hardwareMap.dcMotor.get("m5");      // 1 on red controller SN VUTK
-        driveLeftFront = hardwareMap.dcMotor.get("m6");     // 2 on red
-        driveRightBack = hardwareMap.dcMotor.get("m1");     // 1 on purple controller SN UVQF
-        driveRightFront = hardwareMap.dcMotor.get("m2");    // 2 on purple
+        driveLeftBack = hardwareMap.dcMotor.get("m5");
+        driveLeftFront = hardwareMap.dcMotor.get("m6");
+        driveRightBack = hardwareMap.dcMotor.get("m1");
+        driveRightFront = hardwareMap.dcMotor.get("m2");
         driveLeftBack.setDirection(DcMotor.Direction.FORWARD);
         driveLeftFront.setDirection(DcMotor.Direction.FORWARD);
         driveRightBack.setDirection(DcMotor.Direction.REVERSE);
@@ -162,8 +165,8 @@ public class Oak_9804_BLUE_Auto_NearFar_v8 extends LinearOpMode {
 
 
         //give the configuration names for the servos
-        grabLeft = hardwareMap.servo.get("s1");             // xx on servo controller SN VSI1
-        grabRight = hardwareMap.servo.get("s2");            // xx on servo controller
+        grabLeft = hardwareMap.servo.get("s1");
+        grabRight = hardwareMap.servo.get("s2");
 
         windowWiper = hardwareMap.servo.get("s5");
 
@@ -187,10 +190,11 @@ public class Oak_9804_BLUE_Auto_NearFar_v8 extends LinearOpMode {
         shelterDrop.setPosition(shelterDropPosition);
 
 
-        ModernRoboticsI2cGyro gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");
+        ModernRoboticsI2cGyro gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");    //initialize gyro to be used in code
 
         hardwareMap.logDevices();
 
+        //calibrate the gyro and get the current heading
         gyro.calibrate();
 
 
@@ -202,59 +206,57 @@ public class Oak_9804_BLUE_Auto_NearFar_v8 extends LinearOpMode {
             Thread.sleep(50);
         }
 
-        while (this.opModeIsActive()) {
 
-            driveStraightBackwards(0, 50.9117, 0.5); //the distance is absolute, the heading is incremental, the mid power is absolute
+        while (this.opModeIsActive() && runMe) { //the op mode is active conditional forces the code to stop once the driver station specifies
 
-            stopMotors();
+            driveStraightBackwards(0, 101.827, 0.6);//heading, distance, mid power
+
+            waitOneFullHardwareCycle();
+
+            stopMotors();       //stop motors to prevent further movement
+
+            waitOneFullHardwareCycle();
 
             this.resetStartTime();
-            while (this.getRuntime() < 15) {
+            while (this.getRuntime() < 1.5 && this.opModeIsActive()) {
                 waitOneFullHardwareCycle();
             }
 
+            spinMoveCounterClockwise(45); // heading
 
-            spinMoveCounterClockwise(90);//the heading is incremental
+            waitOneFullHardwareCycle();
 
-            stopMotors();
+            stopMotors();       //stop motors to prevent further movement
+
+            waitOneFullHardwareCycle();
 
             this.resetStartTime();
-            while (this.getRuntime() < 15) {
+            while (this.getRuntime() < 1.5 && this.opModeIsActive()) {
                 waitOneFullHardwareCycle();
             }
 
+            scoreShelterDrop(2); //move servo for 2 seconds score, and 2 seconds retract
 
-            driveStraightForwards(90, 24, 0.5); //the distance is absolute, the heading is incremental, the mid power is absolute
+            waitOneFullHardwareCycle();
 
-            stopMotors();
+            stopMotors();       //stop motors to prevent further movement
 
-            this.resetStartTime();
-            while (this.getRuntime() < 15) {
-                waitOneFullHardwareCycle();
-            }
+            waitOneFullHardwareCycle();
 
+            telemetry.addData("CODE COMPLETE", telemetryVariable);
 
-            windowWiperActivate();
-
-            stopMotors();
-
-            this.resetStartTime();
-            while (this.getRuntime() < 15) {
-                waitOneFullHardwareCycle();
-            }
-
-
-            driveStraightForwards(90, 24, 0.5); //the distance is absolute, the heading is incremental, the mid power is absolute
-
-            stopMotors();
-
-            objectiveAttained();
+            runMe = false;
 
         }
 
     }//finish the opmode
 
     void stopMotors() {
+        /*
+         * How to use this method:
+         *  Use this method at any point right after motors are running
+         *  This will stop the motors to get them ready for the next step in the code
+         */
         //set all motor powers to 0 after portions of the code finish running
         driveLeftBack.setPower(0.0);
         driveLeftFront.setPower(0.0);
@@ -265,15 +267,37 @@ public class Oak_9804_BLUE_Auto_NearFar_v8 extends LinearOpMode {
         telemetry.addData("STOP ALL MOTORS", telemetryVariable);
     }
 
-
-    void objectiveAttained() {
-        //method for when the code is finished
-        stopMotors();
-        telemetry.addData("CODE COMPLETE", telemetryVariable);
+    void scoreShelterDrop(double shelterScoreTime) {
+        /*
+         * How to use this method:
+         *  Run this method when you wish to use the servo to score in the shelter
+         *  Input the time you want the servo to move forwards.
+         *  This number will be used for release and retract times
+         */
+        //resets the start time to be used in the loop
+        this.resetStartTime();
+        //while loop to run servo while to loop is active
+        while (this.getRuntime() < shelterScoreTime && this.opModeIsActive()) {
+            shelterDrop.setPosition(shelterDropRelease);
+        }
+        //sets the shelter drop back to no power
+        shelterDrop.setPosition(shelterDropInitialize);
+        this.resetStartTime();
+        while (this.getRuntime() < shelterScoreTime && this.opModeIsActive()) {
+            shelterDrop.setPosition(shelterDropRetract);
+        }
+        shelterDrop.setPosition(shelterDropInitialize);
+        //telemetry for phones about task finished
+        telemetry.addData("SCORE CLIMBERS", telemetryVariable);
 
     }
 
+
     void windowWiperActivate() {
+        /*
+         * How to use this method:
+         *  Call on this method when you wish to run the window wiper servo to clear debris from the front of the robot
+         */
         //CLEAR DEBRIS WITH WINDOW WIPER SERVO
         windowWiper.setPosition(sweepOpened);
         this.resetStartTime();
@@ -290,6 +314,11 @@ public class Oak_9804_BLUE_Auto_NearFar_v8 extends LinearOpMode {
     }
 
     void spinMoveCounterClockwise(int heading) {
+        /*
+         * How to use this method:
+         *  In the op mode, input the ABSOLUTE heading of the desired position for the robot on the field.
+         *  After the code is finished, run the stopMotors method to fully stop all drive and spin motors
+         */
 
         //SPIN MOVE
         ModernRoboticsI2cGyro gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");
@@ -318,8 +347,8 @@ public class Oak_9804_BLUE_Auto_NearFar_v8 extends LinearOpMode {
             if (leftPower < -1) {
                 leftPower = -1;
             }
-            if (leftPower > -0.2) {           //avoid zero closing power at low error
-                leftPower = -0.2;            //0.1 stalled near target heading
+            if (leftPower > -0.6) {           //avoid zero closing power at low error
+                leftPower = -0.6;            //anything less than 0.6 stalled near target heading
             }
 
 
@@ -328,8 +357,8 @@ public class Oak_9804_BLUE_Auto_NearFar_v8 extends LinearOpMode {
             if (rightPower > 1) {
                 rightPower = 1;
             }
-            if (rightPower < 0.2) {
-                rightPower = 0.2;
+            if (rightPower < 0.6) {
+                rightPower = 0.6;
             }
 
             //when spinning CCW, left front is trailing, left back is leading
@@ -351,7 +380,11 @@ public class Oak_9804_BLUE_Auto_NearFar_v8 extends LinearOpMode {
     }
 
     void spinMoveClockwise(int heading) {
-
+       /*
+         * How to use this method:
+         *  In the op mode, input the ABSOLUTE heading of the desired position for the robot on the field.
+         *  After the code is finished, run the stopMotors method to fully stop all drive and spin motors
+         */
         //SPIN MOVE
         ModernRoboticsI2cGyro gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");
 
@@ -378,8 +411,8 @@ public class Oak_9804_BLUE_Auto_NearFar_v8 extends LinearOpMode {
             if (leftPower > 1) {
                 leftPower = 1;
             }
-            if (leftPower < 0.2) {           //avoid zero closing power at low error
-                leftPower = 0.2;            //0.1 stalled near target heading
+            if (leftPower < 0.6) {           //avoid zero closing power at low error
+                leftPower = 0.6;            //0.1 stalled near target heading
             }
 
 
@@ -388,13 +421,13 @@ public class Oak_9804_BLUE_Auto_NearFar_v8 extends LinearOpMode {
             if (rightPower < -1) {
                 rightPower = -1;
             }
-            if (rightPower > -0.2) {
-                rightPower = -0.2;
+            if (rightPower > -0.6) {
+                rightPower = -0.6;
             }
 
             //when spinning CW, left front is leading, left back is trailing
             //right front is trailing, right back is leading
-            //trailing gets caulculated full power, leading gets 95% of calculated full power
+            //trailing gets calculated full power, leading gets 95% of calculated full power
             driveLeftFront.setPower(0.95 * leftPower);
             driveLeftBack.setPower(leftPower);
             driveRightFront.setPower(rightPower);
@@ -402,13 +435,20 @@ public class Oak_9804_BLUE_Auto_NearFar_v8 extends LinearOpMode {
 
         } while (currentHeading > targetHeading
                 && this.getRuntime() < 6 && this.opModeIsActive());
-        //spin from 0 to - number, so loop while 'greater than' the target heading
+        //spin from 0 towards a more - heading, so loop while 'greater than' the target heading
 
         telemetry.addData("SPIN CW DONE", telemetryVariable);
 
     }
 
     void driveStraightForwards(int heading, double distance, double midPower) {
+        /*
+         * How to use this method:
+         *  Programmer inputs heading, distance, and midpower
+         *      Heading = ABSOLUTE heading of the robot on the field
+         *      Distance = INCREMENTAL distance that you wish to have the robot run this time
+         *      MidPower = the desired midpower that you wish to have the robot run with
+         */
         //clear the previous telemetry output on the phones
         telemetry.clearData();
 
@@ -489,6 +529,13 @@ public class Oak_9804_BLUE_Auto_NearFar_v8 extends LinearOpMode {
     }
 
     void driveStraightBackwards(int heading, double distance, double midPower) {
+        /*
+         * How to use this method:
+         *  Programmer inputs heading, distance, and midpower
+         *      Heading = ABSOLUTE heading of the robot on the field
+         *      Distance = INCREMENTAL distance that you wish to have the robot run this time
+         *      MidPower = the desired midpower that you wish to have the robot run with
+         */
         //DRIVE BACKWARDS DESIRED INCHES
 
         ModernRoboticsI2cGyro gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");
@@ -504,8 +551,6 @@ public class Oak_9804_BLUE_Auto_NearFar_v8 extends LinearOpMode {
         //math for target encoder counts to travel
         rotations = targetDistance / circumference;
         targetEncoderCounts = (int) (encoderCountsPerRotation * rotations); //casts the target encoder counts as an integer
-
-        spin.setPower(0);
 
         //resets start time before starting the drive
         this.resetStartTime();
@@ -566,7 +611,7 @@ public class Oak_9804_BLUE_Auto_NearFar_v8 extends LinearOpMode {
 
         }
         while (EncErrorLeft > 0                   //the error is slowly decreasing, so run while greater than 0
-                && this.getRuntime() < 12 && this.opModeIsActive());         //safety timeout of 100 seconds
+                && this.getRuntime() < 12 && this.opModeIsActive());         //safety timeout of 12 seconds
 
 
         telemetry.addData("DRIVE STRAIGHT BACKWARDS DONE", telemetryVariable);

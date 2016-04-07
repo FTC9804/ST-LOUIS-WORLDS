@@ -11,24 +11,18 @@ import com.qualcomm.robotcore.hardware.Servo;
  *
  * Drives a predetermined set distance
  *
- * v1 3-12-16 at 7:01 pm Steve -- test code for delayed near->near blue
- * v2 3-12-16 at 8:03 pm Steve -- test code for near->near blue with methods
- * v3 3-15-16 at 6:17 pm Steve -- test code with methods set up in competition layout
- * v4 3-15-16 at 8:06 pm Steve -- test code with methods mapped out
- * v5 3-20-16 at 11:40 pm Steve -- test code with updated methods based on Google Drive Notes
- * v6 3-20-16 at 12:57 pm Steve -- test code with updates comments for methods and variables
- * v7 3-21-16 at 4:26 pm Steve -- test code for running on the robot with logic checked
- * v8 3-22-16 at 1:33 pm Steve -- test code with "while(this.opModeIsActive())" loop
+ * v0 4-6-16 at 8:59 pm Steve, Etienne, & Bridget -- use Ax00 code from Oakland tournament
  *
  *
  * SetUp:
- * Back right edge of first full box from the mountain on the blue side
+ * Back left edge of second full box from the mountain on the red side
  * Facing the shelter BACKWARDS
  *
  * Movement:
- * Delays 15 seconds
- * Drive for 2*sqrt(2)*12 = 33.94 inches backwards with spin motors running
- * Spins CCW 90º
+ * Delay 15 seconds
+ * Drive for 1.5*2*sqrt(2)*12 = 50.9117 inches backwards with spin motors running
+ * Spins CW 90º
+ * drive FORWARDS 24 inches
  * window wiper servo
  * drive FORWARDS 24 inches
  *
@@ -71,7 +65,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  */
 
 
-public class Oak_9804_BLUE_Auto_DELAY_NearNear_v8 extends LinearOpMode {
+public class Worlds_9804_RED_DELAY_NearFar_Ax00 extends LinearOpMode {
 
     //drive motors
     //front is the side with the arms, back is the side with the spinners
@@ -187,7 +181,6 @@ public class Oak_9804_BLUE_Auto_DELAY_NearNear_v8 extends LinearOpMode {
         ziplineBar.setPosition(ziplineBarPosition);
         shelterDrop.setPosition(shelterDropPosition);
 
-
         ModernRoboticsI2cGyro gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");
 
         hardwareMap.logDevices();
@@ -202,8 +195,8 @@ public class Oak_9804_BLUE_Auto_DELAY_NearNear_v8 extends LinearOpMode {
         while (gyro.isCalibrating()) {
             Thread.sleep(50);
         }
-        while (this.opModeIsActive()) {
 
+        while (this.opModeIsActive()) {
             //DELAY 15 SECONDS
             stopMotors();
 
@@ -213,39 +206,56 @@ public class Oak_9804_BLUE_Auto_DELAY_NearNear_v8 extends LinearOpMode {
             }
 
 
-            driveStraightBackwards(0, 33.94, 0.5); //the distance is absolute, the heading is incremental, the mid power is absolute
+            driveStraightBackwards(0, 50.9117, 0.5); //the distance is absolute, the heading is incremental, the mid power is absolute
 
             stopMotors();
+
 
             this.resetStartTime();
             while (this.getRuntime() < 15) {
                 waitOneFullHardwareCycle();
             }
 
-
-            spinMoveCounterClockwise(90);//the heading is incremental
+            spinMoveClockwise(-90);//the heading is incremental
 
             stopMotors();
+
 
             this.resetStartTime();
             while (this.getRuntime() < 15) {
                 waitOneFullHardwareCycle();
             }
 
+            driveStraightForwards(-90, 24, 0.5); //the distance is absolute, the heading is incremental, the mid power is absolute
+
+            stopMotors();
+
+
+            this.resetStartTime();
+            while (this.getRuntime() < 15) {
+                waitOneFullHardwareCycle();
+            }
 
             windowWiperActivate();
 
-            driveStraightForwards(90, 24, 0.5); //the distance is absolute, the heading is incremental, the mid power is absolute
-
-            stopMotors();
 
             this.resetStartTime();
             while (this.getRuntime() < 15) {
                 waitOneFullHardwareCycle();
             }
 
+            driveStraightForwards(-90, 24, 0.5); //the distance is absolute, the heading is incremental, the mid power is absolute
+
+            stopMotors();
+
+
+            this.resetStartTime();
+            while (this.getRuntime() < 15) {
+                waitOneFullHardwareCycle();
+            }
 
             objectiveAttained();
+
         }
 
     }//finish the opmode
@@ -260,7 +270,6 @@ public class Oak_9804_BLUE_Auto_DELAY_NearNear_v8 extends LinearOpMode {
 
         telemetry.addData("STOP ALL MOTORS", telemetryVariable);
     }
-
 
     void objectiveAttained() {
         //method for when the code is finished
@@ -568,6 +577,5 @@ public class Oak_9804_BLUE_Auto_DELAY_NearNear_v8 extends LinearOpMode {
         telemetry.addData("DRIVE STRAIGHT BACKWARDS DONE", telemetryVariable);
 
     }
-
 
 }//finish the code

@@ -11,24 +11,17 @@ import com.qualcomm.robotcore.hardware.Servo;
  *
  * Drives a predetermined set distance
  *
- * v1 3-21-16 at 5:53 pm Steve -- initial test code for climber code
- * v2 3-22-16 at 1:33 pm Steve -- test code with "while(this.opModeIsActive())" loop
- * v3 3-22-16 at 2:24 pm Steve -- test code with new robot path mapped
- * v4 3-22-16 at 3:47 pm Steve -- test code with updates from running robot
- * v5 3-22-16 at 4:04 pm Steve -- update commenting
- * v6 3-22-16 at 6:24 pm Steve -- test code with update to exit while loop
- * v7 3-22-16 at 7:15 pm Steve -- test code with update with waitOneFullHardwareCycle(); added
- * v8 3-22-16 at 9:29 pm Steve -- test code with updated delays to competition times
+ * v0 4-6-16 at 8:59 pm Steve, Etienne, & Bridget -- use Ax00 code from Oakland tournament
  *
  *
  * SetUp:
- * Back right edge of third full box from the mountain on the blue side
+ * Back left edge of second full box from the mountain on the red side
  * Facing the shelter BACKWARDS
  *
  *
  * Movement:
- * Drive for 3.75*2*sqrt(2)*12 = 127.279 inches backwards with spin motors running
- * Spins CW 45º
+ * Drive for 3*2*sqrt(2)*12 = 101.823 inches backwards with spin motors running
+ * Spins CCW 45º
  * Release climbers
  *
  * GENERAL RULE:
@@ -72,7 +65,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  */
 
 
-public class Oak_9804_BLUE_Auto_Climbers_v8 extends LinearOpMode {
+public class Worlds_9804_RED_ClimbersLeaveShelter_Ax00 extends LinearOpMode {
 
     //drive motors
     //front is the side with the arms, back is the side with the spinners
@@ -213,13 +206,52 @@ public class Oak_9804_BLUE_Auto_Climbers_v8 extends LinearOpMode {
             Thread.sleep(50);
         }
 
-        while (this.opModeIsActive() && runMe) {
+        while (this.opModeIsActive() && runMe) {     //the op mode is active conditional forces the code to stop once the driver station specifies
 
-            driveStraightBackwards(0, 127.279, 0.6); //heading, distance, mid power
+            driveStraightBackwards(0, 101.823, 0.6); //heading, distance, mid power
 
             waitOneFullHardwareCycle();
 
-            stopMotors();   //stop motors to prevent further movement
+            stopMotors();       //stop motors to prevent further movement
+
+            waitOneFullHardwareCycle();
+
+            this.resetStartTime();
+            while (this.getRuntime() < 1.5 && this.opModeIsActive()) {
+                waitOneFullHardwareCycle();
+            }
+
+            spinMoveCounterClockwise(45); //heading
+
+            waitOneFullHardwareCycle();
+
+            stopMotors();       //stop motors to prevent further movement
+
+            waitOneFullHardwareCycle();
+
+            this.resetStartTime();
+            while (this.getRuntime() < 1.5 && this.opModeIsActive()) {
+                waitOneFullHardwareCycle();
+            }
+
+            scoreShelterDrop(2);    //move servo for two seconds to score and two seconds to retract
+
+            waitOneFullHardwareCycle();
+
+            stopMotors();       //stop motors to prevent further movement
+
+            waitOneFullHardwareCycle();
+
+            this.resetStartTime();
+            while (this.getRuntime() < 1.5 && this.opModeIsActive()) {
+                waitOneFullHardwareCycle();
+            }
+
+            driveStraightForwards(45, 18, 0.6); //heading, distance, mid power
+
+            waitOneFullHardwareCycle();
+
+            stopMotors();       //stop motors to prevent further movement
 
             waitOneFullHardwareCycle();
 
@@ -232,25 +264,23 @@ public class Oak_9804_BLUE_Auto_Climbers_v8 extends LinearOpMode {
 
             waitOneFullHardwareCycle();
 
-            stopMotors();   //stop motors to prevent further movement
+            stopMotors();       //stop motors to prevent further movement
 
             waitOneFullHardwareCycle();
 
-            this.resetStartTime();
             while (this.getRuntime() < 1.5 && this.opModeIsActive()) {
                 waitOneFullHardwareCycle();
             }
 
-
-            scoreShelterDrop(2);    //move servo for 2 seconds to score, and 2 seconds to retract
-
-            waitOneFullHardwareCycle();
-
-            stopMotors();   //stop motors to prevent further movement
+            driveStraightBackwards(-45, 36, 0.6);   //heading, distance, mid power
 
             waitOneFullHardwareCycle();
 
-            telemetry.addData("CODE COMPLETE", telemetryVariable);
+            stopMotors();       //stop motors to prevent further movement
+
+            waitOneFullHardwareCycle();
+
+            telemetry.addData("CODE COMPLETE", telemetryVariable);      //telemetry to display information that the code is complete
 
             runMe = false;
 
@@ -283,7 +313,7 @@ public class Oak_9804_BLUE_Auto_Climbers_v8 extends LinearOpMode {
          */
         //resets the start time to be used in the loop
         this.resetStartTime();
-        //while loop to run servo while to loop is active
+        //while loop to run servo while the loop is active
         while (this.getRuntime() < shelterScoreTime && this.opModeIsActive()) {
             shelterDrop.setPosition(shelterDropRelease);
         }
@@ -306,12 +336,12 @@ public class Oak_9804_BLUE_Auto_Climbers_v8 extends LinearOpMode {
          *  Call on this method when you wish to run the window wiper servo to clear debris from the front of the robot
          */
         //CLEAR DEBRIS WITH WINDOW WIPER SERVO
-        windowWiper.setPosition(sweepOpened);
+        windowWiper.setPosition(sweepOpened);   //set window wiper servo to an open position
         this.resetStartTime();
         while (this.getRuntime() < 1 && this.opModeIsActive()) { //give a short period of time for the hardware to execute the command
             stopMotors();
         }
-        windowWiper.setPosition(sweepClosed);
+        windowWiper.setPosition(sweepClosed);   //set window wiper servo to a closed position
         this.resetStartTime();
         while (this.getRuntime() < 0.5 && this.opModeIsActive()) { //give a short period of time for the hardware to execute the command
             stopMotors();
@@ -344,7 +374,7 @@ public class Oak_9804_BLUE_Auto_Climbers_v8 extends LinearOpMode {
             telemetry.addData("current signed heading: ", currentHeading);
 
             //takes the heading error for the value of our gyro
-            headingError = targetHeading - currentHeading;//for CCW spin from 0 to +º, error always positive
+            headingError = targetHeading - currentHeading;//for CCW spin from 0 to a +º, error always positive
 
             //drive steering for proportional control
             driveSteering = headingError * driveGain;     //positive value for CCW
@@ -379,7 +409,7 @@ public class Oak_9804_BLUE_Auto_Climbers_v8 extends LinearOpMode {
 
         } while (currentHeading < targetHeading
                 && this.getRuntime() < 6 && this.opModeIsActive());
-        //spin from 0 to + number, so loop while 'less than' the target heading
+        //spin from 0 to a more + heading, so loop while 'less than' the target heading
 
         telemetry.addData("SPIN CCW DONE", telemetryVariable);
 
@@ -393,10 +423,10 @@ public class Oak_9804_BLUE_Auto_Climbers_v8 extends LinearOpMode {
          *  After the code is finished, run the stopMotors method to fully stop all drive and spin motors
          */
         //SPIN MOVE
-        ModernRoboticsI2cGyro gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");
+        ModernRoboticsI2cGyro gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");        //initiates gyro for the code
 
         driveGain = 0.05;       //OK for spin
-        targetHeading = heading;    //90º CW (using signed heading) (positive value CCW)
+        targetHeading = heading;    //CW (using signed heading) (positive value CCW)
 
         this.resetStartTime();
 
@@ -419,7 +449,7 @@ public class Oak_9804_BLUE_Auto_Climbers_v8 extends LinearOpMode {
                 leftPower = 1;
             }
             if (leftPower < 0.6) {           //avoid zero closing power at low error
-                leftPower = 0.6;            //0.1 stalled near target heading
+                leftPower = 0.6;            //anything less than 0.6 stalled near target heading
             }
 
 

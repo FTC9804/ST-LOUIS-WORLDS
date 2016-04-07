@@ -11,24 +11,17 @@ import com.qualcomm.robotcore.hardware.Servo;
  *
  * Drives a predetermined set distance
  *
- * v1 3-5-16 at 5:37 pm Steve -- test code with additional servos to drive for set distance; corrected the effective dia of wheel
- * v2 3-5-16 at 8:22 pm Steve -- test code for near->near red
- * v3 3-12-16 at 8:00 pm Steve -- test code for near->near red with methods
- * v4 3-15-16 at 8:06 pm Steve -- test code with methods mapped out
- * v5 3-20-16 at 11:40 pm Steve -- test code with updated methods based on Google Drive Notes
- * v6 3-20-16 at 12:57 pm Steve -- test code with updates comments for methods and variables
- * v7 3-21-16 at 4:26 pm Steve -- test code for running on the robot with logic checked
- * v8 3-22-16 at 1:33 pm Steve -- test code with "while(this.opModeIsActive())" loop
+ * v0 4-6-16 at 8:59 pm Steve, Etienne, & Bridget -- use Ax00 code from Oakland tournament
  *
  *
  * SetUp:
- * Back left edge of first full box from the mountain on the red side
+ * Back left edge of second full box from the mountain on the red side
  * Facing the shelter BACKWARDS
  *
  * Movement:
- * Delays 15 seconds
- * Drive for 2*sqrt(2)*12 = 33.94 inches backwards with spin motors running
+ * Drive for 1.5*2*sqrt(2)*12 = 50.9117 inches backwards with spin motors running
  * Spins CW 90º
+ * drive FORWARDS 24 inches
  * window wiper servo
  * drive FORWARDS 24 inches
  *
@@ -37,7 +30,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  *  FWD: leftPower = midPower - driveSteering;
  *  BWD: leftPower = midPower + drive Steering
  *  CCW: positive
- *  CW: negative
+ *  CW: negative *
  *
  *
  * Configuration Info
@@ -71,7 +64,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  */
 
 
-public class Oak_9804_RED_Auto_DELAY_NearNear_v8 extends LinearOpMode {
+public class Worlds_9804_RED_NearFar_Ax00 extends LinearOpMode {
 
     //drive motors
     //front is the side with the arms, back is the side with the spinners
@@ -187,6 +180,7 @@ public class Oak_9804_RED_Auto_DELAY_NearNear_v8 extends LinearOpMode {
         ziplineBar.setPosition(ziplineBarPosition);
         shelterDrop.setPosition(shelterDropPosition);
 
+
         ModernRoboticsI2cGyro gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");
 
         hardwareMap.logDevices();
@@ -203,15 +197,7 @@ public class Oak_9804_RED_Auto_DELAY_NearNear_v8 extends LinearOpMode {
         }
 
         while (this.opModeIsActive()) {
-            //DELAY 15 SECONDS
-            stopMotors();
-
-            //allow time to read encoder value
-            for (int i = 0; i < 10; i++) {
-                waitOneFullHardwareCycle();
-            }
-
-            driveStraightBackwards(0, 33.94, 0.5); //the distance is absolute, the heading is incremental, the mid power is absolute
+            driveStraightBackwards(0, 50.9117, 0.5); //the distance is absolute, the heading is incremental, the mid power is absolute
 
             stopMotors();
 
@@ -222,6 +208,16 @@ public class Oak_9804_RED_Auto_DELAY_NearNear_v8 extends LinearOpMode {
             }
 
             spinMoveClockwise(-90); //the heading is incremental
+
+            stopMotors();
+
+
+            this.resetStartTime();
+            while (this.getRuntime() < 15) {
+                waitOneFullHardwareCycle();
+            }
+
+            driveStraightForwards(-90, 24, 0.5); //the distance is absolute, the heading is incremental, the mid power is absolute
 
             stopMotors();
 
@@ -250,6 +246,7 @@ public class Oak_9804_RED_Auto_DELAY_NearNear_v8 extends LinearOpMode {
                 waitOneFullHardwareCycle();
             }
 
+
             objectiveAttained();
 
         }
@@ -266,7 +263,6 @@ public class Oak_9804_RED_Auto_DELAY_NearNear_v8 extends LinearOpMode {
 
         telemetry.addData("STOP ALL MOTORS", telemetryVariable);
     }
-
 
     void objectiveAttained() {
         //method for when the code is finished
@@ -574,5 +570,6 @@ public class Oak_9804_RED_Auto_DELAY_NearNear_v8 extends LinearOpMode {
         telemetry.addData("DRIVE STRAIGHT BACKWARDS DONE", telemetryVariable);
 
     }
+
 
 }//finish the code

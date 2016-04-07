@@ -11,21 +11,17 @@ import com.qualcomm.robotcore.hardware.Servo;
  *
  * Drives a predetermined set distance
  *
- * v1 3-21-16 at 5:53 pm Steve -- initial test code for climber code with a far start
- * v2 3-22-16 at 3:14 pm Steve -- test code with results from testing
- * v3 3-22-16 at 4:04 pm Steve -- update commenting
- * v4 3-22-16 at 6:24 pm Steve -- test code with update to exit while loop
- * v5 3-22-16 at 7:17 pm Steve -- test code with update with waitOneFullHardwareCycle(); added
+ * v0 4-6-16 at 8:59 pm Steve, Etienne, & Bridget -- use Ax00 code from Oakland tournament
  *
  *
  * SetUp:
- * Back right edge of third full box from the mountain on the blue side
+ * Back left edge of second full box from the mountain on the red side
  * Facing the shelter BACKWARDS
  *
  *
  * Movement:
- * Drive for 3.75*2*sqrt(2)*12 = 127.279 inches backwards with spin motors running
- * Spins CW 45º
+ * Drive for 3*2*sqrt(2)*12 = 101.823 inches backwards with spin motors running
+ * Spins CCW 45º
  * Release climbers
  *
  * GENERAL RULE:
@@ -33,7 +29,6 @@ import com.qualcomm.robotcore.hardware.Servo;
  *  BWD: leftPower = midPower + drive Steering
  *  CCW: positive
  *  CW: negative
- *  CR Servos: 1 is CW, 0 is CCW, 0.5 is stopped
  *  Heading = ABSOLUTE heading of the robot on the field
  *  Distance = INCREMENTAL distance of the robot on the field
  *
@@ -69,7 +64,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  */
 
 
-public class Oak_9804_BLUE_Auto_ClimbersFarStart_v6 extends LinearOpMode {
+public class Worlds_9804_RED_ClimbersFarStart_Ax00 extends LinearOpMode {
 
     //drive motors
     //front is the side with the arms, back is the side with the spinners
@@ -93,7 +88,7 @@ public class Oak_9804_BLUE_Auto_ClimbersFarStart_v6 extends LinearOpMode {
     //servo to unleash the hooks
     Servo hookPoles;
 
-    //servo to launch the wings to hit the zipline climbers
+    //servo to launch the wings to hit the zipline bar
     Servo ziplineBar;
 //    Servo allClear;     //not used
 
@@ -210,8 +205,9 @@ public class Oak_9804_BLUE_Auto_ClimbersFarStart_v6 extends LinearOpMode {
             Thread.sleep(50);
         }
 
-        while (this.opModeIsActive() && runMe) { //move servo for 2 seconds to score, and 2 seconds to retract
-            driveStraightBackwards(0, 36, 0.6);//heading, distance, mid power
+        while (this.opModeIsActive() && runMe) {     //the op mode is active conditional forces the code to stop once the driver station specifies
+
+            driveStraightBackwards(0, 24, 0.6);//heading, distance, mid power
 
             waitOneFullHardwareCycle();
 
@@ -224,7 +220,7 @@ public class Oak_9804_BLUE_Auto_ClimbersFarStart_v6 extends LinearOpMode {
                 waitOneFullHardwareCycle();
             }
 
-            spinMoveClockwise(-135);//heading
+            spinMoveClockwise(-45);//heading
 
             waitOneFullHardwareCycle();
 
@@ -237,20 +233,7 @@ public class Oak_9804_BLUE_Auto_ClimbersFarStart_v6 extends LinearOpMode {
                 waitOneFullHardwareCycle();
             }
 
-            driveStraightBackwards(-135, 127.279, 0.6); //heading, distance, mid power
-
-            waitOneFullHardwareCycle();
-
-            stopMotors();       //stop motors to prevent further movement
-
-            waitOneFullHardwareCycle();
-
-            this.resetStartTime();
-            while (this.getRuntime() < 1.5 && this.opModeIsActive()) {
-                waitOneFullHardwareCycle();
-            }
-
-            spinMoveClockwise(-180); //heading
+            driveStraightBackwards(-45, 101.823, 0.6); //heading, distance, mid power
 
             waitOneFullHardwareCycle();
 
@@ -264,7 +247,20 @@ public class Oak_9804_BLUE_Auto_ClimbersFarStart_v6 extends LinearOpMode {
             }
 
 
-            scoreShelterDrop(2);    //move servo to score for 2 seconds, and retract for 2 seconds
+            spinMoveCounterClockwise(0); //heading
+
+            waitOneFullHardwareCycle();
+
+            stopMotors();       //stop motors to prevent further movement
+
+            waitOneFullHardwareCycle();
+
+            this.resetStartTime();
+            while (this.getRuntime() < 1.5 && this.opModeIsActive()) {
+                waitOneFullHardwareCycle();
+            }
+
+            scoreShelterDrop(2);//move servo for 2 seconds to score and 2 seconds to retract
 
             waitOneFullHardwareCycle();
 

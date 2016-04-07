@@ -11,24 +11,16 @@ import com.qualcomm.robotcore.hardware.Servo;
  *
  * Drives a predetermined set distance
  *
- * v1 3-5-16 at 5:37 pm Steve -- test code with additional servos to drive for set distance; corrected the effective dia of wheel
- * v2 3-5-16 at 8:22 pm Steve -- test code for near->near red
- * v3 3-12-16 at 8:00 pm Steve -- test code for near->near red with methods
- * v4 3-15-16 at 8:06 pm Steve -- test code with methods mapped out
- * v5 3-20-16 at 11:40 pm Steve -- test code with updated methods based on Google Drive Notes
- * v6 3-20-16 at 12:57 pm Steve -- test code with updates comments for methods and variables
- * v7 3-21-16 at 4:26 pm Steve -- test code for running on the robot with logic checked
- * v8 3-22-16 at 1:33 pm Steve -- test code with "while(this.opModeIsActive())" loop
+ * v0 4-6-16 at 8:59 pm Steve, Etienne, & Bridget -- use Ax00 code from Oakland tournament
  *
  *
  * SetUp:
- * Back left edge of first full box from the mountain on the red side
+ * Back right edge of first full box from the mountain on the blue side
  * Facing the shelter BACKWARDS
- *
  *
  * Movement:
  * Drive for 2*sqrt(2)*12 = 33.94 inches backwards with spin motors running
- * Spins CW 90º
+ * Spins CCW 90º
  * window wiper servo
  * drive FORWARDS 24 inches
  *
@@ -71,7 +63,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  */
 
 
-public class Oak_9804_RED_Auto_NearNear_v8 extends LinearOpMode {
+public class Worlds_9804_BLUE_NearNear_Ax00 extends LinearOpMode {
 
     //drive motors
     //front is the side with the arms, back is the side with the spinners
@@ -89,11 +81,11 @@ public class Oak_9804_RED_Auto_NearNear_v8 extends LinearOpMode {
     //extra servo
     Servo box;
 
-    Servo shelterDrop;
+    Servo shelterDrop; //0.5
 
     Servo hookPoles;
 
-    Servo ziplineBar;
+    Servo ziplineBar;   //0
 //    Servo allClear;     //not used
 
     //servo to push away debris from ramp
@@ -149,7 +141,7 @@ public class Oak_9804_RED_Auto_NearNear_v8 extends LinearOpMode {
 
 
         //gives name of drive motors
-        driveLeftBack = hardwareMap.dcMotor.get("m5");      // 1 on red SN VUTK
+        driveLeftBack = hardwareMap.dcMotor.get("m5");      // 1 on red controller SN VUTK
         driveLeftFront = hardwareMap.dcMotor.get("m6");     // 2 on red
         driveRightBack = hardwareMap.dcMotor.get("m1");     // 1 on purple controller SN UVQF
         driveRightFront = hardwareMap.dcMotor.get("m2");    // 2 on purple
@@ -215,7 +207,7 @@ public class Oak_9804_RED_Auto_NearNear_v8 extends LinearOpMode {
             }
 
 
-            spinMoveClockwise(-90); //the heading is incremental
+            spinMoveCounterClockwise(90);//the heading is incremental
 
             stopMotors();
 
@@ -227,13 +219,7 @@ public class Oak_9804_RED_Auto_NearNear_v8 extends LinearOpMode {
 
             windowWiperActivate();
 
-
-            this.resetStartTime();
-            while (this.getRuntime() < 15) {
-                waitOneFullHardwareCycle();
-            }
-
-            driveStraightForwards(-90, 24, 0.5); //the distance is absolute, the heading is incremental, the mid power is absolute
+            driveStraightForwards(90, 24, 0.5); //the distance is absolute, the heading is incremental, the mid power is absolute
 
             stopMotors();
 
@@ -244,6 +230,7 @@ public class Oak_9804_RED_Auto_NearNear_v8 extends LinearOpMode {
             }
 
             objectiveAttained();
+
         }
 
     }//finish the opmode
@@ -258,7 +245,6 @@ public class Oak_9804_RED_Auto_NearNear_v8 extends LinearOpMode {
 
         telemetry.addData("STOP ALL MOTORS", telemetryVariable);
     }
-
 
     void objectiveAttained() {
         //method for when the code is finished
@@ -566,4 +552,5 @@ public class Oak_9804_RED_Auto_NearNear_v8 extends LinearOpMode {
         telemetry.addData("DRIVE STRAIGHT BACKWARDS DONE", telemetryVariable);
 
     }
+
 }//finish the code
