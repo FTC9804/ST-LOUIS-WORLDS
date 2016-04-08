@@ -2,7 +2,7 @@ package com.qualcomm.ftcrobotcontroller.opmodes;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 
-//==========================================================
+//=============================================================================================
 /*
 * the IR Distance Sensor returns a value beteeen 0 and 1024 according to Team Torch. 0 is no light returned.
 * Use "floorIR.getLightDetectedRaw() < LIGHT_THRESHOLD && opModeIsActive()" as the conditional for line detected
@@ -27,6 +27,9 @@ public class IR_Distance_Sensor_Threshold_Tester_v00 extends LinearOpMode {
     static double IR_THRESHOLD7 = 100;
     static double IR_THRESHOLD8 = 110;
 
+    //Just to make sure we dont have to make it any greater
+    static double IR_THRESHOLD9 = 200;
+
     //bools displayed to phone
     boolean THRESHOLD1PASSED = false;
     boolean THRESHOLD2PASSED = false;
@@ -36,6 +39,7 @@ public class IR_Distance_Sensor_Threshold_Tester_v00 extends LinearOpMode {
     boolean THRESHOLD6PASSED = false;
     boolean THRESHOLD7PASSED = false;
     boolean THRESHOLD8PASSED = false;
+    boolean THRESHOLD9PASSED = false;
 
     @Override
     public void runOpMode() throws InterruptedException {
@@ -63,6 +67,7 @@ public class IR_Distance_Sensor_Threshold_Tester_v00 extends LinearOpMode {
             telemetry.addData("Passed IR_THRESHOLD6: ", THRESHOLD6PASSED);
             telemetry.addData("Passed IR_THRESHOLD7: ", THRESHOLD7PASSED);
             telemetry.addData("Passed IR_THRESHOLD8: ", THRESHOLD8PASSED);
+            telemetry.addData("Passed IR_THRESHOLD8: ", THRESHOLD9PASSED);
 
         } //finish the opmode
     }
@@ -115,6 +120,12 @@ public class IR_Distance_Sensor_Threshold_Tester_v00 extends LinearOpMode {
                 THRESHOLD8PASSED = true;
             } else {
                 THRESHOLD8PASSED = false;
+            }
+
+            if (lightDetected > IR_THRESHOLD9){
+                THRESHOLD9PASSED = true;
+            } else {
+                THRESHOLD9PASSED = false;
             }
 
         }
