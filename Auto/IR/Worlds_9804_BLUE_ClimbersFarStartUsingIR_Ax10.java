@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  *
  * Drives a predetermined set distance
  *
- * Ax10 4-8-16 at 7:32 pm Steve, Bridget, & Etienne -- introduce new autonomous red program with optical distance sensor methods
+ * Ax10 4-8-16 at 8:32 pm Steve -- introduce new autonomous blue program with optical distance sensor methods
  *
  *
  * SetUp:
@@ -77,8 +77,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  */
 
 
-
-public class Worlds_9804_RED_ClimbersFarStartUsingIR_Ax10 extends LinearOpMode {
+public class Worlds_9804_BLUE_ClimbersFarStartUsingIR_Ax10 extends LinearOpMode {
 
     //drive motors
     //front is the side with the arms, back is the side with the spinners
