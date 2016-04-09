@@ -521,8 +521,6 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingIR_Ax11 extends LinearOpMode 
 
     }
 
-
-
     void driveStraightForwards(int heading, double distance, double midPower) {
         /*
          * How to use this method:
@@ -609,7 +607,6 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingIR_Ax11 extends LinearOpMode 
 
 
     }
-
 
     void driveStraightBackwards(int heading, double distance, double midPower) {
         /*
@@ -890,6 +887,10 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingIR_Ax11 extends LinearOpMode 
 
         telemetry.addData("SPIN CW TO LINE DONE", telemetryVariable);
 
+
+    }
+
+    void lineFollow() {
 
     }
 
