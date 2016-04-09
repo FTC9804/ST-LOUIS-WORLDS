@@ -1,0 +1,40 @@
+/*
+
+*IR is positioned on the front center of the robot
+
+WITH BUTTON SENSOR:
+
+FOR RED:
+(1) The Robot is aimed at the white line at about a 45 degree angle from the wall towards the white line.
+(2) When it reaches 90 (or a determined encoder distance), drive backward at 0.3 power
+(3) As soon as the robot sees white, STOP (with safety time limit)
+(4) Overshoot line with the distance between the sensor and the center of the robot (7 inch ish ??)
+(5) Spin CCW until white line
+(6) Move backward a tested distance
+(7) Line follow until right and left sensors are pressed
+(8) Move backward another set distance
+(9) Rotate 45 degrees CCW
+(10) Move forward a tested distance
+(11) Rotate 45 degrees CW
+(12) Move forward another set distance
+(13) deploy climbers
+
+FOR BLUE:
+(1) The Robot is aimed at the white line at about a 45 degree angle from the wall towards the white line.
+(2) When it reaches 90 (or a determined encoder distance), drive backward at 0.3 power
+(3) As soon as the robot sees white, STOP (with safety time limit)
+(4) Overshoot line with the distance between the sensor and the center of the robot (7 inch ish ??)
+(5) Spin CW until white line
+(6) Move backward a tested distance
+(7) Line follow until right and left sensors are pressed
+(8) Move backward another set distance
+(9) Rotate 45 degrees CCW
+(10) Move forward a tested distance
+(11) Rotate 45 degrees CCW
+(12) Move forward another set distance
+(13) deploy climbers
+
+
+*
+*
+*/
