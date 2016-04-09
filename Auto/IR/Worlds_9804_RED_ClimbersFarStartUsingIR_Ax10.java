@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  *
  * Drives a predetermined set distance
  *
- * v0 4-6-16 at 8:59 pm Steve, Etienne, & Bridget -- use Ax00 code from Oakland tournament
+ * Ax10 4-8-16 at 7:32 pm Steve, Bridget, & Etienne -- introduce new autonomous red program with optical distance sensor methods
  *
  *
  * SetUp:
@@ -59,6 +59,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  * VCFP         Yellow          led retract             DO1             led2
  * VCFP         Yellow          magnet extend           DO0             mag1
  * VCFP         Yellow          magnet retract          DO2             mag2
+ * VCFP         Yellow          IR ODS                  ***             ir
  *              Blue            Power Distro <-> Phones
  *
  *
@@ -78,7 +79,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 
 
-public class Worlds_9804_RED_ClimbersFarStartUsingIR_Ax00 extends LinearOpMode {
+public class Worlds_9804_RED_ClimbersFarStartUsingIR_Ax10 extends LinearOpMode {
 
     //drive motors
     //front is the side with the arms, back is the side with the spinners
@@ -156,9 +157,9 @@ public class Worlds_9804_RED_ClimbersFarStartUsingIR_Ax00 extends LinearOpMode {
 //    double allClearPosition = allClearInitialize;
 
 
-    int RawDetectedIR;                  //IR Light detection value
-    static int IR_THRESHOLD = 100;      //IR Light threshold
-    boolean lineDetected;
+    int rawDetectedIR;                  //IR Light detection value
+    static int IR_THRESHOLD = 100;      //IR Light threshold ****NEEDS TO BE TESTED*****
+    boolean lineDetected = false;       //boolean to leave do-while loop in methods
 
     //USE CONFIGURATION FILE 'JABBED' ON BOTH MAIN AND B PHONES
 
@@ -225,58 +226,7 @@ public class Worlds_9804_RED_ClimbersFarStartUsingIR_Ax00 extends LinearOpMode {
 
         while (this.opModeIsActive() && runMe) {     //the op mode is active conditional forces the code to stop once the driver station specifies
 
-            driveStraightBackwards(0, 24, 0.6);//heading, distance, mid power
 
-            waitOneFullHardwareCycle();
-
-            stopMotors();       //stop motors to prevent further movement
-
-            waitOneFullHardwareCycle();
-
-            this.resetStartTime();
-            while (this.getRuntime() < 1.5 && this.opModeIsActive()) {
-                waitOneFullHardwareCycle();
-            }
-
-            spinMoveClockwise(-45);//heading
-
-            waitOneFullHardwareCycle();
-
-            stopMotors();       //stop motors to prevent further movement
-
-            waitOneFullHardwareCycle();
-
-            this.resetStartTime();
-            while (this.getRuntime() < 1.5 && this.opModeIsActive()) {
-                waitOneFullHardwareCycle();
-            }
-
-            driveStraightBackwards(-45, 101.823, 0.6); //heading, distance, mid power
-
-            waitOneFullHardwareCycle();
-
-            stopMotors();       //stop motors to prevent further movement
-
-            waitOneFullHardwareCycle();
-
-            this.resetStartTime();
-            while (this.getRuntime() < 1.5 && this.opModeIsActive()) {
-                waitOneFullHardwareCycle();
-            }
-
-
-            spinMoveCounterClockwise(0); //heading
-
-            waitOneFullHardwareCycle();
-
-            stopMotors();       //stop motors to prevent further movement
-
-            waitOneFullHardwareCycle();
-
-            this.resetStartTime();
-            while (this.getRuntime() < 1.5 && this.opModeIsActive()) {
-                waitOneFullHardwareCycle();
-            }
 
             scoreShelterDrop(2);//move servo for 2 seconds to score and 2 seconds to retract
 
@@ -292,7 +242,7 @@ public class Worlds_9804_RED_ClimbersFarStartUsingIR_Ax00 extends LinearOpMode {
 
         }
 
-    }//finish the opmode
+    } //finish the opmode
 
     void stopMotors() {
         /*
@@ -355,6 +305,8 @@ public class Worlds_9804_RED_ClimbersFarStartUsingIR_Ax00 extends LinearOpMode {
 
 
     }
+
+    //NON IR DRIVING METHODS
 
     void spinMoveCounterClockwise(int heading) {
         /*
@@ -484,6 +436,8 @@ public class Worlds_9804_RED_ClimbersFarStartUsingIR_Ax00 extends LinearOpMode {
 
     }
 
+
+
     void driveStraightForwards(int heading, double distance, double midPower) {
         /*
          * How to use this method:
@@ -571,18 +525,6 @@ public class Worlds_9804_RED_ClimbersFarStartUsingIR_Ax00 extends LinearOpMode {
 
     }
 
-    //FOUND WHITE LINE SHOULD BE USED AS A CONDITIONAL IN FINDING THE WHITE LINE
-    boolean foundWhiteLine(int lightDetected){
-
-        if (lightDetected > IR_THRESHOLD){
-            lineDetected = true;
-        } else {
-            lineDetected = false;
-        }
-
-        return lineDetected;
-
-    }
 
     void driveStraightBackwards(int heading, double distance, double midPower) {
         /*
@@ -671,6 +613,198 @@ public class Worlds_9804_RED_ClimbersFarStartUsingIR_Ax00 extends LinearOpMode {
 
 
         telemetry.addData("DRIVE STRAIGHT BACKWARDS DONE", telemetryVariable);
+
+    }
+
+    //IR DRIVING METHODS
+
+    void driveStraightBackwardsUntilWhiteLineIsDetected(int heading, double midPower) {
+
+        /*
+         * Purpose of this method:
+         *  drive backwards with spinners running until the robot senses a white line
+         *
+         * How to use this method:
+         *  Programmer inputs heading and the midpower for driving
+         *       Heading = ABSOLUTE heading of the robot on the field
+         *       MidPower = the desired midpower that you wish to have the robot run with
+         *
+         */
+
+        ModernRoboticsI2cGyro gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");
+
+        OpticalDistanceSensor floorIR = (OpticalDistanceSensor) hardwareMap.opticalDistanceSensor.get("ir");
+
+        telemetry.clearData();      //clear all telemetry data before starting
+
+        driveGain = 0.05;           //gain for proportional control
+
+        targetHeading = heading;                //drive straight ahead at the initial/default heading
+
+
+        //resets start time before starting the drive
+        this.resetStartTime();
+
+
+        do {
+
+            //get and assign the raw infrared value the sensor detects
+            rawDetectedIR = floorIR.getLightDetectedRaw();
+
+            if (rawDetectedIR > IR_THRESHOLD) {
+                lineDetected = true;
+            }
+
+            spin.setPower(1);  // Eject debris while driving, to clear path
+
+            // get the Z-axis heading info.
+            //this is a signed heading not a basic heading
+            currentHeading = gyro.getIntegratedZValue();
+
+            headingError = targetHeading - currentHeading;  //find the error between the headings
+
+            driveSteering = headingError * driveGain;       //create the proportion for the steering
+
+            leftPower = midPower + driveSteering;           //adds the drive steering to midpower because we are driving backwards
+            if (leftPower > 1.0) {                            //cuts ourselves off at 1, the maximum motor power
+                leftPower = 1.0;
+            }
+            if (leftPower < 0.2) {
+                leftPower = 0.2;
+            }
+            rightPower = midPower - driveSteering;          //subtraction because we are driving backwards
+            if (rightPower > 1.0) {
+                rightPower = 1.0;
+            }
+            if (rightPower < 0.2) {
+                rightPower = 0.2;
+            }
+            //when driving backwards, reverse leading and trailing
+            //left front is now trailing, left back is now leading
+            //trailing gets full power
+            driveLeftFront.setPower(-leftPower);
+            driveLeftBack.setPower(-.95 * leftPower);       //creates belt tension between the drive pulleys
+            driveRightFront.setPower(-rightPower);
+            driveRightBack.setPower(-.95 * rightPower);
+
+
+        }
+        while ( !lineDetected       //run while the line is not detected
+                && this.getRuntime() < 12 && this.opModeIsActive());         //safety timeout of 12 seconds
+
+        lineDetected = false; //reset the variable to be used again
+
+        telemetry.addData("DRIVE STRAIGHT BACKWARDS TO LINE DONE", telemetryVariable);
+
+    }
+
+    void spinMoveCounterClockwiseUntilWhiteLineIsDetected() {
+        /*
+         * How to use this method:
+         *  Run the code and watch the robot spin to the line
+         */
+
+        //SPIN MOVE
+        ModernRoboticsI2cGyro gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");
+
+        OpticalDistanceSensor floorIR = (OpticalDistanceSensor) hardwareMap.opticalDistanceSensor.get("ir");
+
+        driveGain = 0.05;       //OK for spin move
+
+        this.resetStartTime();
+
+        do {
+            //get and assign the raw infrared value the sensor detects
+            rawDetectedIR = floorIR.getLightDetectedRaw();
+
+            if (rawDetectedIR > IR_THRESHOLD) {
+                lineDetected = true;
+            }
+
+            //takes the current heading of the gyro
+            currentHeading = gyro.getIntegratedZValue();
+
+            //telemetry to print the current signed heading
+            telemetry.addData("current signed heading: ", currentHeading);
+
+            //for CCW spin, left tread runs backwards
+            leftPower = -.7;
+
+            //for CCW spin, right tread runs forwards
+            rightPower = .7;
+
+
+            //when spinning CCW, left front is trailing, left back is leading
+            //right front is leading, right back is trailing
+            //trailing gets calculated full power, leading gets 95% of calculated full  power
+
+            driveLeftFront.setPower(leftPower);
+            driveLeftBack.setPower(0.95 * leftPower);
+            driveRightFront.setPower(0.95 * rightPower);
+            driveRightBack.setPower(rightPower);
+
+        } while ( !lineDetected       //run while the line is not detected
+                && this.getRuntime() < 6 && this.opModeIsActive());
+
+        lineDetected = false;
+
+        telemetry.addData("SPIN CCW TO LINE DONE", telemetryVariable);
+
+
+    }
+
+    void spinMoveClockwiseUntilWhiteLineIsDetected() {
+        /*
+         * How to use this method:
+         *  Run the code and watch the robot spin to the line
+         */
+
+        //SPIN MOVE
+        ModernRoboticsI2cGyro gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");
+
+        OpticalDistanceSensor floorIR = (OpticalDistanceSensor) hardwareMap.opticalDistanceSensor.get("ir");
+
+        driveGain = 0.05;       //OK for spin move
+
+        this.resetStartTime();
+
+        do {
+            //get and assign the raw infrared value the sensor detects
+            rawDetectedIR = floorIR.getLightDetectedRaw();
+
+            if (rawDetectedIR > IR_THRESHOLD) {
+                lineDetected = true;
+            }
+
+            //takes the current heading of the gyro
+            currentHeading = gyro.getIntegratedZValue();
+
+            //telemetry to print the current signed heading
+            telemetry.addData("current signed heading: ", currentHeading);
+
+            //for CCW spin, left tread runs forwards
+            leftPower = .7;
+
+            //for CCW spin, right tread runs backwards
+            rightPower = -.7;
+
+
+            //when spinning CW, left front is leading, left back is trailing
+            //right front is trailing, right back is leading
+            //trailing gets calculated full power, leading gets 95% of calculated full  power
+
+            driveLeftFront.setPower(0.95 * leftPower);
+            driveLeftBack.setPower(leftPower);
+            driveRightFront.setPower(rightPower);
+            driveRightBack.setPower(0.95 * rightPower);
+
+        } while ( !lineDetected       //run while the line is not detected
+                && this.getRuntime() < 6 && this.opModeIsActive());
+
+        lineDetected = false;
+
+        telemetry.addData("SPIN CW TO LINE DONE", telemetryVariable);
+
 
     }
 
