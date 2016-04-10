@@ -1,0 +1,4 @@
+#BlueJ class context
+comment0.params=numMatches\ numAutoMatches\ autoClimbers\ climberAttempts\ autoMountainattempts\ climberCapability\ numAutoClimbers\ startToBoxSpeed\ beacon\ numBeacons\ autoHigh\ autoNumHighs\ autoMid\ autoNumMids\ autoFullLows\ autoNumFullLows\ autoPartialLow\ autoNumPartialLows\ lowGoalCapable\ numLowGoalsPerMatch\ midGoalCapable\ numMidGoalsPerMatch\ highGoalCapable\ numHighGoalsPerMatch\ zipLineCapable\ zipLineAttempts\ numZipLinesPerMatch\ endMountainAttempts\ endHigh\ endNumHighs\ endMid\ endNumMids\ hang\ numHangs\ allClear\ numAllClears
+comment0.target=FTCRobot(int,\ int,\ boolean,\ java.lang.String[],\ java.lang.String[],\ boolean,\ int,\ int,\ boolean,\ int,\ boolean,\ int,\ boolean,\ int,\ boolean,\ int,\ boolean,\ int,\ boolean,\ int[],\ boolean,\ int[],\ boolean,\ int[],\ boolean,\ int,\ int[],\ java.lang.String[],\ boolean,\ int,\ boolean,\ int,\ boolean,\ int,\ boolean,\ int)
+numComments=1
