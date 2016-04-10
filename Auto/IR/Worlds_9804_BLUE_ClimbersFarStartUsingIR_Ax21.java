@@ -270,7 +270,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingIR_Ax21 extends LinearOpMode 
 
             waitOneFullHardwareCycle();
 
-            //LINE FOLLOW HERE
+            //LINE FOLLOW HERE -- touch sensors need to be implemented
 
             stopMotors();       //stop motors to prevent further movement
 
@@ -782,6 +782,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingIR_Ax21 extends LinearOpMode 
     }
 
     void spinMoveCounterClockwiseUntilWhiteLineIsDetected() {
+
         /*
          * How to use this method:
          *  Run the code and watch the robot spin to the line
@@ -837,6 +838,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingIR_Ax21 extends LinearOpMode 
     }
 
     void spinMoveClockwiseUntilWhiteLineIsDetected() {
+
         /*
          * How to use this method:
          *  Run the code and watch the robot spin to the line
@@ -891,8 +893,97 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingIR_Ax21 extends LinearOpMode 
 
     }
 
-    void lineFollow() {
+    void lineFollowBackwardsLeftSideOfLine() {
 
+        /*
+         *
+         * Purpose of this method:
+         *  Run the code and watch the robot follow the line left side of the line until the touch sensors are triggered.
+         *  The robot will drive backwards with spin motors running.
+         *
+         */
+
+        OpticalDistanceSensor floorIR = (OpticalDistanceSensor) hardwareMap.opticalDistanceSensor.get("ir");
+
+        driveGain = 0.05;       //OK for spin move
+
+        this.resetStartTime();
+
+
+        while (this.opModeIsActive() /* && code here for touch sensor not active*/){
+
+            spin.setPower(1);  // Eject debris while driving, to clear path
+
+            rawDetectedIR = floorIR.getLightDetectedRaw();
+
+            if (rawDetectedIR > IR_THRESHOLD) {
+                leftPower = -0.9;
+                rightPower = -0.5;
+            }
+            else if (rawDetectedIR < IR_THRESHOLD) {
+                leftPower = -0.5;
+                rightPower = -0.9;
+            }
+            else {
+                leftPower = -0.7;
+                rightPower = -0.7;
+            }
+
+            //when driving backwards, reverse leading and trailing
+            //left front is now trailing, left back is now leading
+            //trailing gets full power
+            driveLeftFront.setPower(-leftPower);
+            driveLeftBack.setPower(-.95 * leftPower);       //creates belt tension between the drive pulleys
+            driveRightFront.setPower(-rightPower);
+            driveRightBack.setPower(-.95 * rightPower);
+
+        }
+    }
+
+    void lineFollowBackwardsRightSideOfLine(){
+
+        /*
+         *
+         * Purpose of this method:
+         *  Run the code and watch the robot follow the line left side of the line until the touch sensors are triggered.
+         *  The robot will drive backwards with spin motors running.
+         *
+         */
+
+        OpticalDistanceSensor floorIR = (OpticalDistanceSensor) hardwareMap.opticalDistanceSensor.get("ir");
+
+        driveGain = 0.05;       //OK for spin move
+
+        this.resetStartTime();
+
+
+        while (this.opModeIsActive() /* && code here for touch sensor not active*/){
+
+            spin.setPower(1);  // Eject debris while driving, to clear path
+
+            rawDetectedIR = floorIR.getLightDetectedRaw();
+
+            if (rawDetectedIR > IR_THRESHOLD) {
+                leftPower = -0.5;
+                rightPower = -0.9;
+            }
+            else if (rawDetectedIR < IR_THRESHOLD) {
+                leftPower = -0.9;
+                rightPower = -0.9;
+            }
+            else {
+                leftPower = -0.7;
+                rightPower = -0.7;
+            }
+
+            //when driving forward, left front is leading, left back is now trailing, same for right
+            //trailing gets full power, leading gets 95% of full power
+            driveLeftFront.setPower(0.95 * leftPower);
+            driveLeftBack.setPower(leftPower);
+            driveRightFront.setPower(0.95 * rightPower);
+            driveRightBack.setPower(rightPower);
+
+        }
     }
 
 }//finish the code
