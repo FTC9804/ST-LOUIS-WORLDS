@@ -1,0 +1,72 @@
+Copyright (c) 2015 Copyright BOMBSQUAD9804 All Rights Reserved.
+Made by FTC Bombsquad 9804 programmers.
+
+PSEUDO CODE FOR NEW AUTO pseudoCodeIRAx20
+
+Revision History:
+- Etienne L. on April 14, 2016 @ 7:20 pm
+  *Made the file and wrote its contents
+
+Requirements:
+* Uses two ODS infrared distance censors
+* Uses a gyro
+* Uses encoders on both of the treads.
+* This is generalized, needs to be specified for red and blue
+
+Key notes:
+* IR Distance sensor has to be tested for red & blue & white thresholds (GO 'MERICA)
+* Center of rotation must be moved to the right of the robot
+    -> To do this the right and left powers have to be adjusted.
+        -> Originally the p error power was (where steeringValue = error * gain):
+            -> L = midPower + steeringValue
+            -> R = midPower - steeringValue
+        -> For BLUE this must be changed to:
+            -> R = rightPower
+            -> L = rightPower + steeringValue
+        -> For RED this must be changed to:
+            -> L = leftPower
+            -> R = leftPower + steeringValue
+    -> Moving the center of rotation to either the right or left side of the robot ensures
+       that the the vectors of steering are equal. In plain, this means we can have a clean
+       line follow using either the right or the left IR sensors. For more details look at the
+       photograph on the Google Drive in the Programming section named "MCR" (Moving the Center of Rotation)
+
+Non-key notes:
+*perhaps we want to start squared off from the wall ?? Multiple start positions, more versatile ?? Maybe not.
+
+Pseudo Code #1:
+
+1. Robot is aimed at a parallel angle to the center lines at a 45 degree angle from the wall
+2. Robot drives backward a determined distance then stops
+3. Robot slows down and drives backward looking for white
+4. When white is sensed, Robot stops and reaffirms it's angle.
+5. Robot drives forward until red line is sensed with a safety limit. IF(no red line is sensed){go back to finding the white line}
+6. Robot drives back to the white line and records the distance between red and white
+7. Robot calculates the lengths of the legs of the right triangle and therefore knows its position on the white line (distance * 0.707)
+8. If (the robot is at the end of the white line)
+      { line follow on the white line using the color specific sensor and the
+   color specific center of rotation.}
+   else If (it is further in) {
+   (1) rotate the robot 45 degrees
+   (2) go forwards until we see red with a constraint of the distance left on the white line (0.707 * distance)
+   (3) find the line again by spinning towards it
+   (4) Once the line is found, line follow using the color specific sensor and the color specific center of rotation.
+9. Score the climbers
+
+Pseudo Code #2:
+
+1. Robot is aimed at a parallel angle to the center lines at a 45 degree angle from the wall
+2. Robot drives backward a determined distance then stops
+3. Robot slows down and drives backward looking for white
+4. When white is sensed, Robot stops and reaffirms it's angle.
+5. Robot drives forward until red line is sensed with a safety limit. IF(no red line is sensed){go back to finding the white line}
+6. Robot drives back to the white line and records the distance between red and white
+7. Robot calculates the lengths of the legs of the right triangle and therefore knows its position on the white line (distance * 0.707)
+5. Robot goes through a couple of cycles of the following process:
+    -> Robot peels to red line and records the distance.
+    -> Robot peels to blue line and records the distance
+    -> Robot peels to red line and records the distance.........
+    -> After a couple of cycles you will be at the end of the white line
+      -> Once the distance is less than a determined amount, look for white
+6. Line follow using the color specific sensor and the color specific center of rotation.
+7. Score climbers 
