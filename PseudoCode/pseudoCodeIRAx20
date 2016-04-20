@@ -69,4 +69,9 @@ Pseudo Code #2:
     -> After a couple of cycles you will be at the end of the white line
       -> Once the distance is less than a determined amount, look for white
 6. Line follow using the color specific sensor and the color specific center of rotation.
-7. Score climbers 
+7. Score climbers
+
+New needed functions:
+
+1. drive forward until red and get encoder distance
+2. calculate position on white 
