@@ -97,6 +97,35 @@ import com.qualcomm.robotcore.hardware.Servo;
  * (11) once distance is reached, stop and score
  * (12) code complete!
  * <p>
+ * <p>
+ * <p>
+ * <p>
+ * <p>
+ * * ~~~~SETUP_(VERSION Tx21)~~~~
+ * (1) Right side of the robot is in the middle of first full tile from mountain
+ * <p>
+ * ~~~~MOVEMENT_(VERSION Tx23)~~~~
+ * (1) Record angle
+ * (2) Drive backwards 1 full tile (24 inches)
+ * (3) Rotate 45º counter-clockwise
+ * (4) Drive backwards until white line is seen w/ right IR sensor
+ * (5) Record angle
+ * (6) Drive forwards away from white line until blue line is seen WHILE RECORDING DISTANCE
+ * (7) leg of triangle along white line is sin(theta)*hypotenuse
+ * (8) Loop until conditions are met
+ * Substeps for loop
+ * -1- Spin move clockwise to new desired heading (delta variable **TEST THIS**)
+ * -2- drive backwards until white line is sensed
+ * -3- drive forwards to the blue line while counting recorder counts and converting to inches
+ * -4- check to see if conditions are met, if so, EXIT loop
+ * $if not, repeat
+ * (9) drive to the white line backwards
+ * (10) overshoot by 6 inches
+ * (11) calculate arc length of circle in order to figure out position on line
+ * (12) proportional line follow with adjusted center of rotation navigation (ACORN) for calculated distance
+ * (13) stop when robot is five inches from the wall
+ * (14) once distance is reached, stop and score
+ * (15) code complete!
  * All the steps correspond to actual steps in the op mode
  * <p>
  * <p>
@@ -158,7 +187,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  * foundWhiteLine(RawDetectedIR);
  * <p>
  * //declare the IR Sensor aimed at the floor.
- * OpticalDistanceSensor floorIr = (OpticalDistanceSensor) hardwareMap.gyroSensor.get("IR");
+ * OpticalDistanceSensor floorIr = (OpticalDistanceSensor) hardwareMap.gyroSensor.get("ir");
  * <p>
  * <p>
  * NOTE ABOUT THE CODE:
@@ -172,13 +201,12 @@ import com.qualcomm.robotcore.hardware.Servo;
  * Left motor = mid power + proportional steering value (error * gain)
  * <p>
  * <p>
- * errors we made
  * <p>
- * specify which sensor is in use, and which score is in use
- * slow down and speed up as we get closer to target
- * add stuff to go to white line in do while loop
- * check proportional line follow for right and left
- * add angle of calculation degrees to do while loop
+ * <p>
+ * CHECKLIST TO DO:
+ * CALCULATE THE DISTANCE LEFT TO GO REGARDING THE ARC LENGTH
+ * SPEED UP ON STRAIGHTAWAYS AND SLOW DOWN AS WE GET CLOSER TO TARGET
+ * ADD THE PROPORTIONAL LINE FOLLOW IN THE CODE FOR 5 INCHES LEFT TO SHELTER
  */
 
 
@@ -218,23 +246,31 @@ public class Worlds_9804_RED_ClimbersFarStartUsingIR_Ax34 extends LinearOpMode {
     //both on the robot. One is for the RED TEAM and the other for the BLUE team
     Servo box;
 
-    /*SHELTER DROP SERVO*/
+    /**
+     * SHELTER DROP SERVO
+     */
     //servo for dropping the climbers in the shelter drop
     //This mechanism is used in the AUTONOMOUS and TELEOP segments and is attched to the top of our robot.
     //It carries two climbers and only has the movement of deploy and store.
     Servo shelterDrop;                    //CR servo
 
-    /* ZIPLINE BAR */
+    /**
+     * ZIPLINE BAR
+     */
     //The zipline bar is a different kind of mechanism where two different micro servos get the same value when pressed.
     //The servos are positioned one on each side and when "ziplineRelease" is set, the bar deploys.
     Servo ziplineBar;                     //Micro Servo
 
-    /* HOOK POLES*/
+    /**
+     * HOOK POLES
+     */
     //the hook poles are the poles which are connected to the arms which that carry the hooks. The hook poles are
     //on one servo and move the hooks closer to the top bar.
     Servo hookPoles;                      //CR Servo
 
-    /*WINDOW WIPER SERVO*/
+    /**
+     * WINDOW WIPER SERVO
+     */
     //servo for debris sweeping away
     //The window wiper servo is used in both AUTO and TELE-OP for when the robot is moving in reverse.
     //Our robot cannot move over blocks very efficiently and, therefore, we try to keep the blocks away
@@ -507,6 +543,25 @@ public class Worlds_9804_RED_ClimbersFarStartUsingIR_Ax34 extends LinearOpMode {
             waitOneFullHardwareCycle();
 
             //step 10
+            driveStraightBackwards(angleOfTriangleCalculationsDegrees, 6, 0.5);
+
+            waitOneFullHardwareCycle();
+
+            stopMotors();
+
+            waitOneFullHardwareCycle();
+
+            //step 11
+                /*
+                 * Create a coordinate plane along the white line
+                 * enter point of intersection where we cross the line
+                 * create circle 6 inches beyond that line with the hypotenuses together in a straight line
+                 * calculate arc length using the proportion we cover of the circumference and the radius
+                 * take the distance and subtract it from 24 to figure out distance to wall, subtract 2 inches for the shelter,
+                 *   and subtract 3 inches for our allowed distance from shelter
+                 * proportional line follow and score
+                 */
+
             //we subtract the distance to travel by 0.5 so we do not accidentally trigger a button or cause field damage
             propoortionalLineFollowForDistanceWithACORNRightSideOfLineRightSideSensor((distanceFromShelterOnLine - 0.5), 0.6);
 
