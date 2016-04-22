@@ -219,7 +219,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  */
 
 
-public class Worlds_9804_RED_ClimbersFarStartUsingIR_Ax35 extends LinearOpMode {
+public class Worlds_9804_RED_ClimbersFarStartUsingODS_Ax35 extends LinearOpMode {
 
     /**
      * DRIVE MOTORS
