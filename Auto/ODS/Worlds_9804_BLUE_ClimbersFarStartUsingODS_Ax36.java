@@ -60,7 +60,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  * <p>
  * <p>
  * ~~~~SETUP_(VERSION Tx21)~~~~
- * (1) Right side of the robot is in the middle of first full tile from mountain
+ * (1) Right side of the robot is in the middle of second full tile from mountain
  * <p>
  * <p>
  * ~~~~MOVEMENT_(VERSION Tx21)~~~~
@@ -201,8 +201,6 @@ import com.qualcomm.robotcore.hardware.Servo;
  *
  *
  *     Checklist:
- *          Fix setup position
- *          fast to slow
  *          absolute value of sin function b/c clockwise
  */
 
@@ -1816,7 +1814,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax36 extends LinearOpMode
 
         angleOfTriangleCalculationsRadians = Math.toRadians((double) (angleOfTriangleCalculationsDegrees));
 
-        distanceTravelledOnWhiteLine = Math.sin(angleOfTriangleCalculationsRadians) * calculatedDistanceInches;
+        distanceTravelledOnWhiteLine = Math.sin(Math.abs(angleOfTriangleCalculationsRadians) * calculatedDistanceInches);
 
         return distanceTravelledOnWhiteLine;
 
