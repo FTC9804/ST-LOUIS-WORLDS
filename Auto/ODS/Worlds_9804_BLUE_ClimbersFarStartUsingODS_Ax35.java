@@ -153,25 +153,29 @@ import com.qualcomm.robotcore.hardware.Servo;
  * XTJI         Orange          right winch             2               m3
  * VUTK         Red             driveRightFront         1               m2
  * VUTK         Red             driveRightBack          2               m1
- * VUTK         Red             right encoder           1
+ * VUTK         Red             right encoder front     1
+ * VUTK         Red             right encoder back      2
  * VF7F         Green           driveLeftFront          1               m6
  * VF7F         Green           driveLeftBack           2               m5
- * VF7F         Green           left encoder            1
+ * VF7F         Green           left encoder front      1
+ * VF7F         Green           right encoder back      2
  * VSI1         White           hookPoles               3               s3
  * VSI1         White           grabRight               4               s2
  * VSI1         White           box                     5               s4
  * VSI1         White           grabLeft                6               s1
  * VCT7         Pink            ziplineBar              5               s8
- * VCT7         Pink            allClear (not used)     2               s7
  * VCT7         Pink            shelterDrop             6               s6
- * VCT7         Pink            windowWiper             1               s5
+ * VCT7         Pink            windowWiperL            1               s5
+ * VCT7         Pink            windowWiperR            2               s7
+ * VCT7         Pink            cliffCamL               3               s9
+ * VCT7         Pink            cliffCamR               4               s10
  * VCFP         Yellow          gyro                    I2C5            gyro
  * VCFP         Yellow          led extend              DO7             led1
  * VCFP         Yellow          led retract             DO1             led2
  * VCFP         Yellow          magnet extend           DO0             mag1
  * VCFP         Yellow          magnet retract          DO2             mag2
- * VCFP         Yellow          ODS Right            ***                ods2
- * VCFP         Yellow          ODS Left             ***                ods1
+ * VCFP         Yellow           ODS Right            ***               ods2
+ * VCFP         Yellow           ODS Left             ***               ods1
  * Blue            Power Distro <-> Phones
  * <p>
  * <p>
@@ -382,6 +386,8 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax35 extends LinearOpMode
 
         ModernRoboticsI2cGyro gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");    //initialize gyro to be used in code
 
+        OpticalDistanceSensor floorODS = (OpticalDistanceSensor) hardwareMap.opticalDistanceSensor.get("ods1");
+
         hardwareMap.logDevices();
 
         //calibrate the gyro and get the current heading
@@ -402,6 +408,11 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax35 extends LinearOpMode
              */
 
             //step 1
+
+            rawDetectedLight = floorODS.getLightDetectedRaw();
+
+            telemetry.addData("ODS Reading : ", rawDetectedLight);
+
             initialGyroHeading = gyro.getIntegratedZValue();
 
             waitOneFullHardwareCycle();
@@ -409,6 +420,10 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax35 extends LinearOpMode
             stopMotors();
 
             waitOneFullHardwareCycle();
+
+            rawDetectedLight = floorODS.getLightDetectedRaw();
+
+            telemetry.addData("ODS Reading : ", rawDetectedLight);
 
             //step 2
             driveStraightBackwards(initialGyroHeading, 24, 0.7);
@@ -477,6 +492,16 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax35 extends LinearOpMode
 
                 waitOneFullHardwareCycle();
 
+                angleOfTriangleCalculationsDegrees = gyro.getIntegratedZValue();
+
+                driveStraightBackwardsUntilWhiteLineIsDetected(angleOfTriangleCalculationsDegrees, 0.5);
+
+                waitOneFullHardwareCycle();
+
+                stopMotors();
+
+                waitOneFullHardwareCycle();
+
                 initialEncoderValue = driveLeftBack.getCurrentPosition();
 
                 driveStraightForwardsUntilBlueLineIsDetected(angleOfTriangleCalculationsDegrees, 0.5);
@@ -530,7 +555,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax35 extends LinearOpMode
             //step 12
 
             //Steve has calculated 9.5 inches as the remaining distance to the wall
-            proportionalLineFollowForDistanceWithACORNLeftSideOfLineLeftSideSensor(9.5, 0.5);
+            proportionalLineFollowForDistanceWithACORNLeftSideOfLineLeftSideSensor(9.5, 0.6);
 
             waitOneFullHardwareCycle();
 
@@ -547,7 +572,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax35 extends LinearOpMode
 
             waitOneFullHardwareCycle();
 
-            //step 12
+            //step 14
             telemetry.addData("CODE COMPLETE", telemetryVariable);
 
             runMe = false;
