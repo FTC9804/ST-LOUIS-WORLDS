@@ -104,7 +104,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  * <p>
  * <p>
  * * ~~~~SETUP_(VERSION Tx21)~~~~
- * (1) Right side of the robot is in the middle of first full tile from mountain
+ * (1) left side of the robot is in the middle of second full tile from mountain
  * <p>
  * ~~~~MOVEMENT_(VERSION Tx23)~~~~
  * (1) Record angle

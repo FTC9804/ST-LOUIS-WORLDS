@@ -198,6 +198,12 @@ import com.qualcomm.robotcore.hardware.Servo;
  * we include a stop motors and a wait one full hardware cycle after EVERY hardware command
  * <p>
  * <p>
+ *
+ *
+ *     Checklist:
+ *          Fix setup position
+ *          fast to slow
+ *          absolute value of sin function b/c clockwise
  */
 
 
