@@ -5,6 +5,7 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.ServoController;
 
 
 /**
@@ -27,7 +28,8 @@ import com.qualcomm.robotcore.hardware.Servo;
  * Ax40 4-22-16 at 4:30 pm Etienne -- new robot autonomous movement and new method organization
  * Ax41 4-22-16 at 8:47 pm Steve & Etienne -- update code with updated movement and new methods
  * Ax42 4-22=16 at 10:15 pm Steve -- code with updated timeouts and comments;  add window wiper before driving forwards
- * TESTING_Ax00 4-23-16 at 11:39 am Etienne -- made testing code that runs faster without extra steps used in Ax40. USES ***TESTING MOVEMENT Ax00*** also new servo init values
+ * Ax43 4-22-16 at 12:32 pm Etienne -- updated code with updated servo initialize variables for blue
+ * Ax50 4-22-16 at 3:34 pm Etienne & Bridget -- updated code and added the things we saw from testing. Will add more when we know what we add
  * <p>
  * <p>
  * <p>
@@ -176,33 +178,12 @@ import com.qualcomm.robotcore.hardware.Servo;
  * (5) overshoot by 6.8 inches
  * (6) spin move clockwise 45º (global position is now -90º)
  * (7) enter loop for checking if we are next to white line; exit when time runs out or we are no longer next to line
- * (s1) drive forwards 4 inches
- * (s2) spin counter clockwise until line is seen or we reach a maximum angle
- * (s3) spin clockwise back to global heading of -90º
+ * (7.1) drive forwards 4 inches (away from the beacon)
+ * (7.2) spin counter clockwise until line is seen or we reach a maximum angle
+ * (7.3) spin clockwise back to global heading of -90º
+ * ***NOW THE ROBOT IS SLIGHTLY BEYOND THE TIP OF THE WHITE LINE*** (facing the beacon)
  * (8) drive straight backwards 4 inches
- * (9) spin move counter clockwise until white line is detected
- * (10) ACORN proportional line follow for 15 inches
- * (11) score shelter drop
- * (12) code complete!
- *
- * ~~~~~~~~~TESTING MOVEMENT Ax00 (BLUE!!!)~~~~~~~~~
- *
- * This version DOES NOT have any **SPINNER MOVEMENT** or **WINDOW WIPER MOVEMENT** (actually uses spinner and sets it to 0 when using stopMotors)
- * The ***SAFETY TIMEOUTS*** are ALL AT 30 SECONDS.
- *
- * -All the steps correspond to actual steps in the op mode
- * -Continue using setup version Tx21
- * -For testing purposes we begin at step 4 of Ax40 Movement Plan
- *
- * (4) drive until white line is seen at medium-low speed
- * (5) overshoot by 6.8 inches
- * (6) spin move clockwise 45º (global position is now -90º)
- * (7) enter loop for checking if we are next to white line; exit when time runs out or we are no longer next to line
- * (s1) drive forwards 4 inches
- * (s2) spin counter clockwise until line is seen or we reach a maximum angle
- * (s3) spin clockwise back to global heading of -90º
- * (8) drive straight backwards 4 inches
- * (9) spin move counter clockwise until white line is detected
+ * (9) spin move counter clockwise until white line is detected, back to earlier position
  * (10) ACORN proportional line follow for 15 inches
  * (11) score shelter drop
  * (12) code complete!
@@ -275,12 +256,12 @@ import com.qualcomm.robotcore.hardware.Servo;
  * we include a stop motors and a wait one full hardware cycle after EVERY hardware command
  * <p>
  * <p>
- * <p>
- * <p>
  */
 
 
-public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends LinearOpMode {
+public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax50 extends LinearOpMode {
+
+    ServoController servoControllerPink, servoControllerWhite;
 
     /**
      * DRIVE MOTORS
@@ -356,6 +337,14 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
     Servo cliffCamL;                    //initialize to 1
     Servo cliffCamR;                    //initialize to 0
 
+    /**
+     * GYRO AND ODS DECLARATION
+     */
+
+    ModernRoboticsI2cGyro gyro;
+
+    OpticalDistanceSensor floorODS;
+
 
     //%%&&~~~~~~~~~VARIABLE DECLARATIONS~~~~~~~~~&&%%//
 
@@ -364,6 +353,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
     double midPower;                        //the middle power for driving that we add and subtract calculates values from
     int targetHeading;                      //target heading the gyro will go to
     double driveGain;                       //the gain for proportional control
+    double driveGainODS = 0.005;            //the gain we use for the ODS line follow
     double leftPower;                       //power for drive motors on the left side
     double rightPower;                      //power for drive motors on the right side
     int currentHeading = 0;                 //This is a signed value, CCW is positive
@@ -427,7 +417,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
 
     //ODS VARIABLES
     int rawDetectedLight;                  //ODS Light detection value
-    static int ODS_THRESHOLD = 700;      //ODS Light threshold ****NEEDS TO BE TESTED*****
+    static int ODS_THRESHOLD = 570;      //ODS Light threshold ****TESTED*****
     boolean lineDetected = false;       //boolean to leave do-while loop in methods
     static int DESIREDLINEFOLLOWNUMBER = 350; //the number for perfect line follow along the edge of the line, NEEDS TO BE TESTED
     double proportionalODSError;
@@ -481,6 +471,15 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
 
         shelterDrop = hardwareMap.servo.get("s6");
 
+        // hardware assignment of two sensors
+
+        gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");
+        floorODS = hardwareMap.opticalDistanceSensor.get("ods1");
+
+        // servo controllers; can disable and re-enable entire unit
+        servoControllerWhite = hardwareMap.servoController.get("servoControllerWhite"); // VSI1
+        servoControllerPink = hardwareMap.servoController.get("servoControllerPink");   // VCT7
+
         //sets initial positions for the servos to activate to
         grabLeft.setPosition(grabLeftUp);
         grabRight.setPosition(grabRightUp);
@@ -499,7 +498,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
 
         hardwareMap.logDevices();
 
-        //calibrate the gyro and get the current heading
+        //calibrate the gyro and set the current heading to zero
         gyro.calibrate();
 
 
@@ -517,8 +516,36 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
              */
 
 
+            //step 0
+            // de-energize the servos when stop button is pressed
+            servoControllerWhite.pwmDisable();
+            servoControllerPink.pwmDisable();
+
+            //step 1
+            driveStraightBackwards(0, 24, 0.7);
+
+            waitOneFullHardwareCycle();
+
+            stopMotors();
+
+            waitOneFullHardwareCycle();
+
+            //step 2
+            spinMoveClockwise(-45);
+
+            waitOneFullHardwareCycle();
+
+            stopMotors();
+
+            waitOneFullHardwareCycle();
+
+            //step 3
+            driveStraightBackwards(-45, 72, 0.7);
+
+            waitOneFullHardwareCycle();
+
             //step 4
-            driveStraightBackwardsUntilWhiteLineIsDetected(0, 0.6); //we are at 0 heading because testing version does not include step 1-3
+            driveStraightBackwardsUntilWhiteLineIsDetected(-45, 0.6);
 
             waitOneFullHardwareCycle();
 
@@ -527,7 +554,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
             waitOneFullHardwareCycle();
 
             //step 5
-            driveStraightBackwards(0, 6.8, 0.5); //6.8 is the overshoot distance that ***HAS NOT BEEN TESTED*** //0 heading because we start parallel to the mid lines
+            driveStraightBackwards(-45, 6.8, 0.5); //6.8 is the overshoot distance that ***HAS NOT BEEN TESTED***
 
             waitOneFullHardwareCycle();
 
@@ -536,7 +563,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
             waitOneFullHardwareCycle();
 
             //step 6
-            spinMoveClockwise(-45);         //now robot is facing beacon with white line underneath
+            spinMoveClockwise(-90);         //now robot is facing beacon with white line underneath
 
             waitOneFullHardwareCycle();
 
@@ -548,12 +575,12 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
 
             this.resetStartTime();
 
-            while (this.opModeIsActive() && this.getRuntime() < 30 && stillAtWhiteLine) {
+            while (this.opModeIsActive() && this.getRuntime() < 20 && stillAtWhiteLine) {
 
-                //windowWiperActivate(); in testing this only takes time, not necessary
+                windowWiperActivate();
 
                 //sub-step 1
-                driveStraightForwards(-45, 4.0, 0.5);
+                driveStraightForwards(-90, 4.0, 0.5);
 
                 waitOneFullHardwareCycle();
 
@@ -573,7 +600,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
                 waitOneFullHardwareCycle();
 
                 //sub-step 3
-                spinMoveClockwise(-45);
+                spinMoveClockwise(-90);
 
                 waitOneFullHardwareCycle();
 
@@ -587,7 +614,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
 
             //step 8
 
-            driveStraightBackwards(-45, 4.0, 0.5);
+            driveStraightBackwards(-90, 4.0, 0.5);
 
             waitOneFullHardwareCycle();
 
@@ -613,6 +640,11 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
 
             waitOneFullHardwareCycle();
 
+            //10.5
+
+            //enable the servo controller that hosts the shelterDrop servo
+            servoControllerPink.pwmEnable();
+
             //step 11
             scoreShelterDrop(2);
 
@@ -623,6 +655,10 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
             waitOneFullHardwareCycle();
 
             //step 12
+
+            // de-energize the servos
+            servoControllerWhite.pwmDisable();
+            servoControllerPink.pwmDisable();
 
             telemetry.addData("CODE COMPLETE", telemetryVariable);
 
@@ -649,7 +685,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
         spin.setPower(0);
 
         telemetry.addData("STOP ALL MOTORS", telemetryVariable);
-    }                                                                      //we use this here
+    }
 
     void scoreShelterDrop(double shelterScoreTime) {
         /*
@@ -674,29 +710,29 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
         //telemetry for phones about task finished
         telemetry.addData("SCORE CLIMBERS", telemetryVariable);
 
-    }                                         //we use this here
+    }
 
-//    void windowWiperActivate() {
-//        /*
-//         * How to use this method:
-//         *  Call on this method when you wish to run the window wiper servo to clear debris from the front of the robot
-//         */
-//        //CLEAR DEBRIS WITH WINDOW WIPER SERVO
-//        windowWiperL.setPosition(sweepOpenedL);
-//        windowWiperR.setPosition(sweepOpenedR);
-//        this.resetStartTime();
-//        while (this.getRuntime() < 1 && this.opModeIsActive()) { //give a short period of time for the hardware to execute the command
-//            stopMotors();
-//        }
-//        windowWiperL.setPosition(sweepClosedL);
-//        windowWiperR.setPosition(sweepClosedR);
-//        this.resetStartTime();
-//        while (this.getRuntime() < 0.5 && this.opModeIsActive()) { //give a short period of time for the hardware to execute the command
-//            stopMotors();
-//        }
-//
-//
-//    }
+    void windowWiperActivate() {
+        /*
+         * How to use this method:
+         *  Call on this method when you wish to run the window wiper servo to clear debris from the front of the robot
+         */
+        //CLEAR DEBRIS WITH WINDOW WIPER SERVO
+        windowWiperL.setPosition(sweepOpenedL);
+        windowWiperR.setPosition(sweepOpenedR);
+        this.resetStartTime();
+        while (this.getRuntime() < 1 && this.opModeIsActive()) { //give a short period of time for the hardware to execute the command
+            stopMotors();
+        }
+        windowWiperL.setPosition(sweepClosedL);
+        windowWiperR.setPosition(sweepClosedR);
+        this.resetStartTime();
+        while (this.getRuntime() < 0.5 && this.opModeIsActive()) { //give a short period of time for the hardware to execute the command
+            stopMotors();
+        }
+
+
+    }
 
     //NON ODS DRIVING METHODS
 
@@ -708,8 +744,6 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
          */
 
         //SPIN MOVE
-        ModernRoboticsI2cGyro gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");
-
 
         driveGain = 0.05;       //OK for spin move
         targetHeading = heading;    //CCW (using signed heading) (positive value CCW)
@@ -758,7 +792,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
             driveRightBack.setPower(rightPower);
 
         } while (currentHeading < targetHeading
-                && this.getRuntime() < 30 && this.opModeIsActive());
+                && this.getRuntime() < 6 && this.opModeIsActive());
         //spin from 0 to + number, so loop while 'less than' the target heading
 
         telemetry.addData("SPIN CCW DONE", telemetryVariable);
@@ -773,7 +807,6 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
          *  After the code is finished, run the stopMotors method to fully stop all drive and spin motors
          */
         //SPIN MOVE
-        ModernRoboticsI2cGyro gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");
 
         driveGain = 0.05;       //OK for spin
         targetHeading = heading;    //90º CW (using signed heading) (positive value CCW)
@@ -821,12 +854,12 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
             driveRightBack.setPower(0.95 * rightPower);
 
         } while (currentHeading > targetHeading
-                && this.getRuntime() < 30 && this.opModeIsActive());
+                && this.getRuntime() < 6 && this.opModeIsActive());
         //spin from 0 towards a more - heading, so loop while 'greater than' the target heading
 
         telemetry.addData("SPIN CW DONE", telemetryVariable);
 
-    }                                                     //we use this here
+    }
 
     void driveStraightForwards(int heading, double distance, double midPower) {
         /*
@@ -838,8 +871,6 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
          */
         //clear the previous telemetry output on the phones
         telemetry.clearData();
-
-        ModernRoboticsI2cGyro gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");
 
         driveGain = 0.05;           //gain used for proportional steering
         targetHeading = heading;        //drive straight ahead, same heading
@@ -908,12 +939,12 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
             driveRightFront.setPower(0.95 * rightPower);
             driveRightBack.setPower(rightPower);
 
-        } while (EncErrorLeft > 0 && this.getRuntime() < 30 && this.opModeIsActive());
+        } while (EncErrorLeft > 0 && this.getRuntime() < 12 && this.opModeIsActive());
 
         telemetry.addData("STRAIGHT FORWARDS DONE", telemetryVariable);
 
 
-    }               //we use this here
+    }
 
     void driveStraightBackwards(int heading, double distance, double midPower) {
         /*
@@ -924,8 +955,6 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
          *      MidPower = the desired midpower that you wish to have the robot run with
          */
         //DRIVE BACKWARDS DESIRED INCHES
-
-        ModernRoboticsI2cGyro gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");
 
         telemetry.clearData();      //clear all telemetry data before starting
 
@@ -948,7 +977,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
 
 
         do {
-           // spin.setPower(1);  // Eject debris while driving, to clear path we do NOT need this while TESTING
+            spin.setPower(1);  // Eject debris while driving, to clear path
 
             currentEncDeltaCountLeft = driveLeftBack.getCurrentPosition() - initialEncCountLeft;         //the current - initial will give the
             currentEncDeltaCountRight = driveRightBack.getCurrentPosition() - initialEncCountRight;      //current distance of the encoders
@@ -998,12 +1027,12 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
 
         }
         while (EncErrorLeft > 0                   //the error is slowly decreasing, so run while greater than 0
-                && this.getRuntime() < 30 && this.opModeIsActive());         //safety timeout of 12 seconds
+                && this.getRuntime() < 12 && this.opModeIsActive());         //safety timeout of 12 seconds
 
 
         telemetry.addData("DRIVE STRAIGHT BACKWARDS DONE", telemetryVariable);
 
-    }              //we use this here
+    }
 
     //ODS DRIVING METHODS
 
@@ -1019,10 +1048,6 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
          *       MidPower = the desired midpower that you wish to have the robot run with
          *
          */
-
-        ModernRoboticsI2cGyro gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");
-
-        OpticalDistanceSensor floorODS = (OpticalDistanceSensor) hardwareMap.opticalDistanceSensor.get("irl");
 
         telemetry.clearData();      //clear all telemetry data before starting
 
@@ -1044,7 +1069,9 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
                 lineDetected = true;
             }
 
-            //spin.setPower(1);  // Eject debris while driving, to clear path //we do NOT need this while TESTING
+            telemetry.addData("ods1 Blue rear left ",  floorODS.getLightDetectedRaw());
+
+            spin.setPower(1);  // Eject debris while driving, to clear path
 
             // get the Z-axis heading info.
             //this is a signed heading not a basic heading
@@ -1079,13 +1106,13 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
 
         }
         while (!lineDetected       //run while the line is not detected
-                && this.getRuntime() < 30 && this.opModeIsActive());         //safety timeout of 12 seconds
+                && this.getRuntime() < 12 && this.opModeIsActive());         //safety timeout of 12 seconds
 
         lineDetected = false; //reset the variable to be used again
 
         telemetry.addData("DRIVE STRAIGHT BACKWARDS TO LINE DONE", telemetryVariable);
 
-    }       //We use this here
+    }
 
     void spinMoveCounterClockwiseUntilWhiteLineIsDetected() {
 
@@ -1095,9 +1122,6 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
          */
 
         //SPIN MOVE
-        ModernRoboticsI2cGyro gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");
-
-        OpticalDistanceSensor floorODS = (OpticalDistanceSensor) hardwareMap.opticalDistanceSensor.get("irl");
 
         driveGain = 0.05;       //OK for spin move
 
@@ -1134,14 +1158,14 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
             driveRightBack.setPower(rightPower);
 
         } while (!lineDetected       //run while the line is not detected
-                && this.getRuntime() < 30 && this.opModeIsActive());
+                && this.getRuntime() < 6 && this.opModeIsActive());
 
         lineDetected = false;
 
         telemetry.addData("SPIN CCW TO LINE DONE", telemetryVariable);
 
 
-    }                                  //we use this here
+    }
 
     void spinMoveCounterClockwiseToCheckForWhiteLine(double checkRotationDegreeDelta) {
 
@@ -1153,9 +1177,6 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
          */
 
         //SPIN MOVE
-        ModernRoboticsI2cGyro gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");
-
-        OpticalDistanceSensor floorODS = (OpticalDistanceSensor) hardwareMap.opticalDistanceSensor.get("irl");
 
         driveGain = 0.05;       //OK for spin move
 
@@ -1197,7 +1218,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
             driveRightBack.setPower(rightPower);
 
         } while (
-                this.getRuntime() < 30 && this.opModeIsActive() && currentHeading < (-45 + checkRotationDegreeDelta) && !lineDetected); //THIS WAS CHANGED TO -45 because we do not start from wall when testing
+                this.getRuntime() < 6 && this.opModeIsActive() && currentHeading < (-90 + checkRotationDegreeDelta) && !lineDetected);
 
         stillAtWhiteLine = lineDetected;
 
@@ -1205,20 +1226,132 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
 
         lineDetected = false;
 
-    }        //we use this here
+    }
 
-    void proportionalLineFollowForDistanceWithACORNRightSideOfLineLeftSideSensor(double distance, double midPower) {
+    void spinMoveClockwiseToCheckForWhiteLine(double checkRotationDegreeDelta) {
+
+        /*
+         * How to use this method:
+         *  Run the code and watch the robot spin clockwise for a predetermined number of degrees unless it sees white and then rotate to its initial position
+         *  If the robot sees white, the function will make "stillAtWhiteLine" true.
+         *  Programmer inputs the degree difference the programmer wants the robot to rotate
+         */
+
+        //SPIN MOVE
+
+        driveGain = 0.05;       //OK for spin move
+
+        this.resetStartTime();
+
+        lineDetected = false;
+
+        do {
+            //get and assign the raw infrared value the sensor detects
+            rawDetectedLight = floorODS.getLightDetectedRaw();
+
+            if (rawDetectedLight > ODS_THRESHOLD) {
+                lineDetected = true;
+            }
+
+            //takes the current heading of the gyro
+            currentHeading = gyro.getIntegratedZValue();
+
+            //telemetry to print the current signed heading
+            telemetry.addData("current signed heading: ", currentHeading);
+
+            //telemetry to print the current raw light detection values
+            telemetry.addData("current ODS raw light value: ", rawDetectedLight);
+
+            //for CW spin, left tread runs backwards
+            leftPower = .7;
+
+            //for CW spin, right tread runs forwards
+            rightPower = -.7;
+
+
+            //when spinning CCW, left front is trailing, left back is leading
+            //right front is leading, right back is trailing
+            //trailing gets calculated full power, leading gets 95% of calculated full  power
+
+            driveLeftFront.setPower(0.95 * leftPower);
+            driveLeftBack.setPower(leftPower);
+            driveRightFront.setPower(rightPower);
+            driveRightBack.setPower(0.95 * rightPower);
+
+        } while (
+                this.getRuntime() < 6 && this.opModeIsActive() && currentHeading < (90 - checkRotationDegreeDelta) && !lineDetected);
+
+        stillAtWhiteLine = lineDetected;
+
+        telemetry.addData("FUNCTION DONE. Line Detected: ", lineDetected);
+
+        lineDetected = false;
+
+    }
+
+    void spinMoveClockwiseUntilWhiteLineIsDetected() {
+
+        /*
+         * How to use this method:
+         *  Run the code and watch the robot spin to the line
+         */
+
+        //SPIN MOVE
+
+        driveGain = 0.05;       //OK for spin move
+
+        this.resetStartTime();
+
+        do {
+            //get and assign the raw infrared value the sensor detects
+            rawDetectedLight = floorODS.getLightDetectedRaw();
+
+            if (rawDetectedLight > ODS_THRESHOLD) {
+                lineDetected = true;
+            }
+
+            //takes the current heading of the gyro
+            currentHeading = gyro.getIntegratedZValue();
+
+            //telemetry to print the current signed heading
+            telemetry.addData("current signed heading: ", currentHeading);
+
+            //for CW spin, left tread runs forwards
+            leftPower = .7;
+
+            //for CW spin, right tread runs backwards
+            rightPower = -.7;
+
+
+            //when spinning CW, left front is leading, left back is trailing
+            //right front is trailing, right back is leading
+            //trailing gets calculated full power, leading gets 95% of calculated full  power
+
+            driveLeftFront.setPower(0.95 * leftPower);
+            driveLeftBack.setPower(leftPower);
+            driveRightFront.setPower(rightPower);
+            driveRightBack.setPower(0.95 * rightPower);
+
+        } while (!lineDetected       //run while the line is not detected
+                && this.getRuntime() < 6 && this.opModeIsActive());
+
+        lineDetected = false;
+
+        telemetry.addData("SPIN CW TO LINE DONE", telemetryVariable);
+
+
+    }
+
+    void proportionalLineFollowForDistanceWithACORNLeftSideOfLineLeftSideSensor(double distance, double midPower) {
         /*
          * How to use this method:
          *  Programmer inputs distance and midpower
          *      Distance = INCREMENTAL distance that you wish to have the robot run this time
          *      MidPower = the desired midpower that you wish to have the robot run with
-         * This follows the line with the sensor on the right side of the right side of the robot
+         * This follows the line with the sensor on the right side of the left side of the robot
          *
-         * Drive backwards a desired distance while following the right side of the white line
+         * Drive backwards a desired distance while following the left side of the white line
          */
-
-        OpticalDistanceSensor floorODS = (OpticalDistanceSensor) hardwareMap.opticalDistanceSensor.get("ods1");
 
         telemetry.clearData();      //clear all telemetry data before starting
 
@@ -1239,7 +1372,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
 
 
         do {
-            //spin.setPower(1);  // Eject debris while driving, to clear path WE DO NOT NEED THIS WHEN TESTING
+            spin.setPower(1);  // Eject debris while driving, to clear path
 
             currentEncDeltaCountLeft = driveLeftBack.getCurrentPosition() - initialEncCountLeft;         //the current - initial will give the
             currentEncDeltaCountRight = driveRightBack.getCurrentPosition() - initialEncCountRight;      //current distance of the encoders
@@ -1263,8 +1396,88 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
 
             driveSteering = proportionalODSError * driveGain; //this would be -
 
-            leftPower = midPower;                           //This allows the right side of the robot to move at a constant speed
-            rightPower = midPower - driveSteering;                                          //left side is the one that gets altered with the driving
+            leftPower = midPower;                           //This allows the left side of the robot to move at a constant speed
+            rightPower = midPower + driveSteering;          //Right side is the one that gets altered with the driving
+            if (rightPower > 1.0) {                         //Addition because need to decrease power when more white is seen
+                rightPower = 1.0;
+            }
+            if (rightPower < 0.2) {
+                rightPower = 0.2;
+            }
+            //when driving backwards, reverse leading and trailing
+            //left front is now trailing, left back is now leading
+            //trailing gets full power
+            driveLeftFront.setPower(-leftPower);
+            driveLeftBack.setPower(-.95 * leftPower);       //creates belt tension between the drive pulleys
+            driveRightFront.setPower(-rightPower);
+            driveRightBack.setPower(-.95 * rightPower);
+
+
+        }
+        while (EncErrorLeft > 0                   //the error is slowly decreasing, so run while greater than 0
+                && this.getRuntime() < 10 && this.opModeIsActive());         //safety timeout of 17 seconds
+
+
+        telemetry.addData("DRIVE STRAIGHT PROPORTIONAL BACKWARDS DONE", telemetryVariable);
+
+    }
+
+    void proportionalLineFollowForDistanceWithACORNRightSideOfLineRightSideSensor(double distance, double midPower) {
+        /*
+         * How to use this method:
+         *  Programmer inputs distance and midpower
+         *      Distance = INCREMENTAL distance that you wish to have the robot run this time
+         *      MidPower = the desired midpower that you wish to have the robot run with
+         * This follows the line with the sensor on the right side of the right side of the robot
+         *
+         * Drive backwards a desired distance while following the right side of the white line
+         */
+
+        telemetry.clearData();      //clear all telemetry data before starting
+
+        driveGain = 0.05;           //gain for proportional control
+
+        targetDistance = distance;              //drive straight given inches from parameter
+
+        //math for target encoder counts to travel
+        rotations = targetDistance / circumference;
+        targetEncoderCounts = (int) (encoderCountsPerRotation * rotations); //casts the target encoder counts as an integer
+
+        //resets start time before starting the drive
+        this.resetStartTime();
+
+        //takes the initial position of the encoders to establish a starting point for the distance
+        initialEncCountLeft = driveLeftBack.getCurrentPosition();
+        initialEncCountRight = driveRightBack.getCurrentPosition();
+
+
+        do {
+            spin.setPower(1);  // Eject debris while driving, to clear path
+
+            currentEncDeltaCountLeft = driveLeftBack.getCurrentPosition() - initialEncCountLeft;         //the current - initial will give the
+            currentEncDeltaCountRight = driveRightBack.getCurrentPosition() - initialEncCountRight;      //current distance of the encoders
+
+
+            EncErrorLeft = targetEncoderCounts - Math.abs(currentEncDeltaCountLeft);                     //the error is the delta between the target counts and current counts
+
+
+            //telemetry for encoder information
+            telemetry.addData("EncErrorLeft = ", EncErrorLeft);
+            telemetry.addData("Left Encoder: ", currentEncDeltaCountLeft);
+
+            //telemetry for the distance travelled (IN INCHES)
+            currentDistance = (currentEncDeltaCountLeft * circumference) / encoderCountsPerRotation;
+            telemetry.addData("Calculated current distance: ", currentDistance);
+
+
+            rawDetectedLight = floorODS.getLightDetectedRaw();
+
+            proportionalODSError = DESIREDLINEFOLLOWNUMBER - rawDetectedLight; //lets say more white, this would be -
+
+            driveSteering = proportionalODSError * driveGain; //this would be -
+
+            leftPower = midPower + driveSteering;                           //This allows the right side of the robot to move at a constant speed
+            rightPower = midPower;                                          //left side is the one that gets altered with the driving
             if (leftPower > 1.0) {                                         //Addition because need to decrease power when more white is seen
                 leftPower = 1.0;
             }
@@ -1282,11 +1495,171 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_TESTING_Ax00 extends Line
 
         }
         while (EncErrorLeft > 0                   //the error is slowly decreasing, so run while greater than 0
-                && this.getRuntime() < 30 && this.opModeIsActive());         //safety timeout of 17 seconds
+                && this.getRuntime() < 10 && this.opModeIsActive());         //safety timeout of 17 seconds
 
 
         telemetry.addData("DRIVE STRAIGHT PROPORTIONAL BACKWARDS DONE", telemetryVariable);
 
-    } //we use this here
+    }
+
+    void proportionalLineFollowForDistanceWithACORNRightSideOfLineLeftSideSensor(double distance, double midPower) {
+        /*
+         * How to use this method:
+         *  Programmer inputs distance and midpower
+         *      Distance = INCREMENTAL distance that you wish to have the robot run this time
+         *      MidPower = the desired midpower that you wish to have the robot run with
+         * This follows the line with the sensor on the right side of the right side of the robot
+         *
+         * Drive backwards a desired distance while following the right side of the white line
+         */
+
+        telemetry.clearData();      //clear all telemetry data before starting
+
+        driveGain = 0.05;           //gain for proportional control
+
+        targetDistance = distance;              //drive straight given inches from parameter
+
+        //math for target encoder counts to travel
+        rotations = targetDistance / circumference;
+        targetEncoderCounts = (int) (encoderCountsPerRotation * rotations); //casts the target encoder counts as an integer
+
+        //resets start time before starting the drive
+        this.resetStartTime();
+
+        //takes the initial position of the encoders to establish a starting point for the distance
+        initialEncCountLeft = driveLeftBack.getCurrentPosition();
+        initialEncCountRight = driveRightBack.getCurrentPosition();
+
+
+        do {
+            spin.setPower(1);  // Eject debris while driving, to clear path
+
+            currentEncDeltaCountLeft = driveLeftBack.getCurrentPosition() - initialEncCountLeft;         //the current - initial will give the
+            currentEncDeltaCountRight = driveRightBack.getCurrentPosition() - initialEncCountRight;      //current distance of the encoders
+
+
+            EncErrorLeft = targetEncoderCounts - Math.abs(currentEncDeltaCountLeft);                     //the error is the delta between the target counts and current counts
+
+
+            //telemetry for encoder information
+            telemetry.addData("EncErrorLeft = ", EncErrorLeft);
+            telemetry.addData("Left Encoder: ", currentEncDeltaCountLeft);
+
+            //telemetry for the distance travelled (IN INCHES)
+            currentDistance = (currentEncDeltaCountLeft * circumference) / encoderCountsPerRotation;
+            telemetry.addData("Calculated current distance: ", currentDistance);
+
+
+            rawDetectedLight = floorODS.getLightDetectedRaw();
+
+            proportionalODSError = DESIREDLINEFOLLOWNUMBER - rawDetectedLight; //lets say more white, this would be -
+
+            driveSteering = proportionalODSError * driveGainODS; //this would be -
+
+            leftPower = midPower;                           //This allows the right side of the robot to move at a constant speed
+            rightPower = midPower - driveSteering;                                          //left side is the one that gets altered with the driving
+            if (rightPower > 1.0) {                                         //Addition because need to decrease power when more white is seen
+                rightPower = 1.0;
+            }
+            if (rightPower < 0.2) {
+                rightPower = 0.2;
+            }
+            //when driving backwards, reverse leading and trailing
+            //left front is now trailing, left back is now leading
+            //trailing gets full power
+            driveLeftFront.setPower(-leftPower);
+            driveLeftBack.setPower(-.95 * leftPower);       //creates belt tension between the drive pulleys
+            driveRightFront.setPower(-rightPower);
+            driveRightBack.setPower(-.95 * rightPower);
+
+
+        }
+        while (EncErrorLeft > 0                   //the error is slowly decreasing, so run while greater than 0
+                && this.getRuntime() < 10 && this.opModeIsActive());         //safety timeout of 17 seconds
+
+
+        telemetry.addData("DRIVE STRAIGHT PROPORTIONAL BACKWARDS DONE", telemetryVariable);
+
+    }
+
+    void proportionalLineFollowForDistanceWithACORNLeftSideOfLineRightSideSensor(double distance, double midPower) {
+        /*
+         * How to use this method:
+         *  Programmer inputs distance and midpower
+         *      Distance = INCREMENTAL distance that you wish to have the robot run this time
+         *      MidPower = the desired midpower that you wish to have the robot run with
+         * This follows the line with the sensor on the left side of the line, right side sensor of the robot
+         *
+         * Drive backwards a desired distance while following the left side of the white line
+         */
+
+        telemetry.clearData();      //clear all telemetry data before starting
+
+        driveGain = 0.05;           //gain for proportional control
+
+        targetDistance = distance;              //drive straight given inches from parameter
+
+        //math for target encoder counts to travel
+        rotations = targetDistance / circumference;
+        targetEncoderCounts = (int) (encoderCountsPerRotation * rotations); //casts the target encoder counts as an integer
+
+        //resets start time before starting the drive
+        this.resetStartTime();
+
+        //takes the initial position of the encoders to establish a starting point for the distance
+        initialEncCountLeft = driveLeftBack.getCurrentPosition();
+        initialEncCountRight = driveRightBack.getCurrentPosition();
+
+
+        do {
+            spin.setPower(1);  // Eject debris while driving, to clear path
+
+            currentEncDeltaCountLeft = driveLeftBack.getCurrentPosition() - initialEncCountLeft;         //the current - initial will give the
+            currentEncDeltaCountRight = driveRightBack.getCurrentPosition() - initialEncCountRight;      //current distance of the encoders
+
+
+            EncErrorLeft = targetEncoderCounts - Math.abs(currentEncDeltaCountLeft);                     //the error is the delta between the target counts and current counts
+
+
+            //telemetry for encoder information
+            telemetry.addData("EncErrorLeft = ", EncErrorLeft);
+            telemetry.addData("Left Encoder: ", currentEncDeltaCountLeft);
+
+            //telemetry for the distance travelled (IN INCHES)
+            currentDistance = (currentEncDeltaCountLeft * circumference) / encoderCountsPerRotation;
+            telemetry.addData("Calculated current distance: ", currentDistance);
+
+
+            rawDetectedLight = floorODS.getLightDetectedRaw();
+
+            proportionalODSError = DESIREDLINEFOLLOWNUMBER - rawDetectedLight; //lets say more white, this would be -
+
+            driveSteering = proportionalODSError * driveGain; //this would be -
+
+            leftPower = midPower - driveSteering;                           //This allows the right side of the robot to move at a constant speed
+            rightPower = midPower;                                          //left side is the one that gets altered with the driving
+            if (leftPower > 1.0) {                                         //Addition because need to decrease power when more white is seen
+                leftPower = 1.0;
+            }
+            if (leftPower < 0.2) {
+                leftPower = 0.2;
+            }
+            //when driving backwards, reverse leading and trailing
+            //left front is now trailing, left back is now leading
+            //trailing gets full power
+            driveLeftFront.setPower(-leftPower);
+            driveLeftBack.setPower(-.95 * leftPower);       //creates belt tension between the drive pulleys
+            driveRightFront.setPower(-rightPower);
+            driveRightBack.setPower(-.95 * rightPower);
+
+
+        }
+        while (EncErrorLeft > 0                   //the error is slowly decreasing, so run while greater than 0
+                && this.getRuntime() < 10 && this.opModeIsActive());         //safety timeout of 17 seconds
+
+
+        telemetry.addData("DRIVE STRAIGHT PROPORTIONAL BACKWARDS DONE", telemetryVariable);
+
+    }
 
 }//finish the code

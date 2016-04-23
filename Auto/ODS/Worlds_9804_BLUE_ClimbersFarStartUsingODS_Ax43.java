@@ -27,7 +27,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  * Ax40 4-22-16 at 4:30 pm Etienne -- new robot autonomous movement and new method organization
  * Ax41 4-22-16 at 8:47 pm Steve & Etienne -- update code with updated movement and new methods
  * Ax42 4-22=16 at 10:15 pm Steve -- code with updated timeouts and comments;  add window wiper before driving forwards
- * Ax43 4-22-16 at 12:32 pm Etienne -- updated code with updated servo initialize variables for blue
+ * Ax43 4-22-16 at 12:32 pm Etienne -- updated code with updated servo initialix for blue
  * <p>
  * <p>
  * <p>
