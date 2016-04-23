@@ -19,13 +19,13 @@ import com.qualcomm.robotcore.hardware.Servo;
  * Ax21 4-9-16 at 6:35 pm Steve -- code with primitive line follow
  * Ax22 4-9-16 at 6:59 pm Steve -- code with v1 of proportional line follow
  * Ax23 4-9-16 at 7:57 pm Steve -- code with revised layout of movement patterns
- * Ax24 ****** at *** pm Bridget -- ~code~
  * Ax31 4-16-16 at 6:52 pm Steve -- updated comments throughout code
  * Ax32 4-16-16 at 6:59 pm Steve -- updated code with center of rotation adjusted for proportional line follows; code adjusted based on new movement protocol
  * Ax33 4-20-16 at 4:49 pm Steve & Etienne -- updated code with new autonomous robot movement, new method for calculating distance on white line
- * Ax34 4-20-16 at 8:05 pm Etienne & Steve -- update code with logic and proportional control revisions but more importantly changed names of ir to match r and l
- * Ax35 4-21-16 at 3:56 pm Etienne & Steve -- updated code to new plan for movement and changed the followline number
- * Ax36 4-21-16 at 5:32 pm Etienne & Steve --updated servo initializations and motors
+ * Ax34 4-20-16 at 8:05 pm Steve & Etienne -- update code with logic and proportional control revisions but more importantly changed names of ir to match r and l
+ * Ax35 4-21-16 at 3:56 pm Steve & Etienne -- updated code to new plan for movement and changed the followline number
+ * Ax36 4-21-16 at 5:32 pm Steve & Etienne --updated servo initializations and motors
+ * Ax40 4-22-16 at 4:30 pm Etienne -- new robot autonomous movement and new method organization
  * <p>
  * <p>
  * <p>
@@ -101,12 +101,12 @@ import com.qualcomm.robotcore.hardware.Servo;
  * (11) once distance is reached, stop and score
  * (12) code complete!
  * <p>
- *
+ * <p>
  * ~~~~SETUP (continue using Tx21)
- *
+ * <p>
  * ~~~~MOVEMENT_(VERSION Tx22)~~~~
  * All the steps correspond to actual steps in the op mode
- *
+ * <p>
  * (1) Record angle
  * (2) Drive backwards 1 full tile (24 inches)
  * (3) Rotate 45º clockwise
@@ -129,8 +129,8 @@ import com.qualcomm.robotcore.hardware.Servo;
  * (14) code complete!
  * <p>
  * <p>
- *
- *
+ * <p>
+ * <p>
  * ~~~~~~~~~MOVEMENT Ax30 (BLUE!!!)~~~~~~~~~
  * All the steps correspond to actual steps in the op mode
  * Continue using setup version Tx21
@@ -142,27 +142,27 @@ import com.qualcomm.robotcore.hardware.Servo;
  * (6) Drive backwards for estimated distance of 6.8 inches at which point the left tread is on the white at same heading
  * (7) spin another -45 degrees or global -90 or 45 degrees clockwise (all synonymous)
  * (8) Now begin the loop (sub-steps)
-    -1- move forwards 6 inches (a big value for the first test)
-    -2-spin counter-clockwise with three different "OR" conditionals
-        -> TIME
-        -> WHITE LINE DETECTED
-        -> 20 DEGREES REACHED
-    -3- If line is detected within the 20 degrees delta and time constraint, repeat loop
-    -4- Else if the line is not detected anymore because you have gone past the white line, go backwards 6 inches and start new loop:
-        >> move forwards one inch (small distance for precise check)
-        >> spin counter-clockwise with the same three or constraints (TIME, WHITE LINE DETECTED, 20 DEGREES REACHED )
-        >> If line is detected within the 20 degrees delta and time constraint, repeat loop
-        >> Else if the line is not detected, we know we are at the end of the line so exit loop
+ * -1- move forwards 6 inches (a big value for the first test)
+ * -2-spin counter-clockwise with three different "OR" conditionals
+ * -> TIME
+ * -> WHITE LINE DETECTED
+ * -> 20 DEGREES REACHED
+ * -3- If line is detected within the 20 degrees delta and time constraint, repeat loop
+ * -4- Else if the line is not detected anymore because you have gone past the white line, go backwards 6 inches and start new loop:
+ * >> move forwards one inch (small distance for precise check)
+ * >> spin counter-clockwise with the same three or constraints (TIME, WHITE LINE DETECTED, 20 DEGREES REACHED )
+ * >> If line is detected within the 20 degrees delta and time constraint, repeat loop
+ * >> Else if the line is not detected, we know we are at the end of the line so exit loop
  * (9) Move forward one inch and spin counter clockwise until white line is seen.
  * (10) ACORN line follow for 20 (estimate) inches
  * (11) stop and score climbers
  * (12) code complete
-
- Some Notes:
-
- -When parallel to the white line the angle delta to white line should be between ***5 and 10*** degrees. If you have
- gone ***20*** (needs to be tested)degrees you have definitely missed the line entirely.
-
+ * <p>
+ * Some Notes:
+ * <p>
+ * -When parallel to the white line the angle delta to white line should be between ***5 and 10*** degrees. If you have
+ * gone ***20*** (needs to be tested)degrees you have definitely missed the line entirely.
+ * <p>
  * <p>
  * <p>
  * GENERAL RULE:
@@ -172,7 +172,7 @@ import com.qualcomm.robotcore.hardware.Servo;
  * CW: negative
  * Heading = ABSOLUTE heading of the robot on the field
  * Distance = INCREMENTAL distance of the robot on the field
- *
+ * <p>
  * referencing floorIR in this program call values from irl, which is the ODS on the left side of the robot, used when blue
  * <p>
  * ACORN = adjusted center of rotation navigation; we use this for our proportional line follow because our ODS sensors are off centered
@@ -232,11 +232,11 @@ import com.qualcomm.robotcore.hardware.Servo;
  * we include a stop motors and a wait one full hardware cycle after EVERY hardware command
  * <p>
  * <p>
- *
- *
- *     Checklist:
- *          pass a variable for the degree turn to the white line as a parameter
- *          check ACORN line follow (left sensor right side line check)
+ * <p>
+ * <p>
+ * Checklist:
+ * pass a variable for the degree turn to the white line as a parameter
+ * check ACORN line follow (left sensor right side line check)
  */
 
 
@@ -530,7 +530,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax40 extends LinearOpMode
 
             this.resetStartTime();
 
-            while(this.opModeIsActive() && this.getRuntime() < 20 && stillAtWhiteLine) {
+            while (this.opModeIsActive() && this.getRuntime() < 20 && stillAtWhiteLine) {
 
                 driveStraightForwards(-90, 6.0, 0.5);
 
@@ -558,7 +558,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax40 extends LinearOpMode
 
                 waitOneFullHardwareCycle();
 
-                telemetry.addData("At the end of the line : ", !stillAtWhiteLine ); //this will display to true
+                telemetry.addData("At the end of the line : ", !stillAtWhiteLine); //this will display to true
 
             }
 
@@ -1007,7 +1007,6 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax40 extends LinearOpMode
         targetHeading = heading;                //drive straight ahead at the initial/default heading
 
 
-
         //resets start time before starting the drive
         this.resetStartTime();
 
@@ -1173,7 +1172,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax40 extends LinearOpMode
             driveRightBack.setPower(rightPower);
 
         } while (
-                this.getRuntime() < 6 && this.opModeIsActive() && currentHeading < -75  && !lineDetected);
+                this.getRuntime() < 6 && this.opModeIsActive() && currentHeading < -75 && !lineDetected);
 
         stillAtWhiteLine = lineDetected;
 
