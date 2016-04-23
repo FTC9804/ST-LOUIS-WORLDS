@@ -282,7 +282,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
  */
 
 
-public class Autonomous_Testing_Ax00_Blue extends LinearOpMode {
+public class Autonomous_Testing_Ax10_Blue extends LinearOpMode {
 
 
     ServoController servoControllerWhite, servoControllerPink;
