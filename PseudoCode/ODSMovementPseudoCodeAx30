@@ -1,0 +1,41 @@
+Copyright (c) 2015 Copyright BOMBSQUAD9804 All Rights Reserved.
+Made by FTC Bombsquad 9804 programmers.
+
+Edits Log:
+
+* 4-22-16 @ 5:18 pm by Etienne L. --made new auto movement plan/pseudo code for auto as of 4-22-16 @ 5:18
+
+~~~~SETUP_(VERSION Tx21)~~~~
+* (1) left side of the robot is in the middle of second full tile from mountain
+
+
+~~~~~~~~~MOVEMENT Ax30 (BLUE!!!)~~~~~~~~~
+*Continue using setup version Tx21
+* (1) Record angle
+* (2) Drive backwards 1 full tile (24 inches)
+* (3) Rotate 45º clockwise
+* (4) Drive backwards until white line is seen w/ left (driving backwards) ODS sensor
+* (5) Record angle
+* (6) Drive backwards for estimated distance of 6.8 inches at which point the left tread is on the white
+* (7) spin another -45 degrees or global -90 or 45 degrees clockwise (all synonymous)
+* (8) Now begin the loop (sub-steps)
+    ## move forwards 6 inches (a big value for the first test)
+    ## spin counter-clockwise with three different "OR" conditionals
+        -> TIME
+        -> WHITE LINE DETECTED
+        -> 20 DEGREES REACHED
+    ## If line is detected within the 20 degrees delta and time constraint, repeat loop
+    ## Else if the line is not detected anymore because you have gone past the white line, go backwards 6 inches and start new loop:
+        >> move forwards one inch (small distance for precise check)
+        >> spin counter-clockwise with the same three or constraints (TIME, WHITE LINE DETECTED, 20 DEGREES REACHED )
+        >> If line is detected within the 20 degrees delta and time constraint, repeat loop
+        >> Else if the line is not detected, we know we are at the end of the line so exit loop
+(9) Move forward one inch and spin counter clockwise until white line is seen.
+(10) ACORN line follow for 20 (estimate) inches
+(11) stop and score climbers
+(12) code complete
+
+Some Notes:
+
+-When parallel to the white line the angle delta to white line should be between ***5 and 10*** degrees. If you have
+ gone ***20*** degrees you have definitely missed the line entirely.
