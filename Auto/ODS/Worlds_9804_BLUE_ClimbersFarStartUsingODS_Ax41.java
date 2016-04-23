@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
-//  TO TEST A NON PROPORTIONAL LINE FOLLOW
 
 /**
  * FTC Team 9804 Bomb Squad -- Autonomous
