@@ -163,14 +163,26 @@ import com.qualcomm.robotcore.hardware.Servo;
  * -When parallel to the white line the angle delta to white line should be between ***5 and 10*** degrees. If you have
  * gone ***20*** (needs to be tested)degrees you have definitely missed the line entirely.
  * <p>
- *
+ * <p>
  * ~~~~~~~~~MOVEMENT Ax40 (BLUE!!!)~~~~~~~~~
  * -All the steps correspond to actual steps in the op mode
  * -Continue using setup version Tx21
  * (1) Drive straight backwards from wall at a 0 degree angle. (When initializing the gyro, 0 degrees is set)
- * (2)
- *
- *
+ * (2) spin move clockwise 45º
+ * (3) drive straight backwards high speed for 72 inches
+ * (4) drive until white line is seen at medium-low speed
+ * (5) overshoot by 6.8 inches
+ * (6) spin move clockwise 45º (global position is now -90º)
+ * (7) enter loop for checking if we are next to white line; exit when time runs out or we are no longer next to line
+ * (s1) drive forwards 4 inches
+ * (s2) spin counter clockwise until line is seen or we reach a maximum angle
+ * (s3) spin clockwise back to global heading of -90º
+ * (8) drive straight backwards 4 inches
+ * (9) spin move counter clockwise until white line is detected
+ * (10) ACORN proportional line follow for 15 inches
+ * (11) score shelter drop
+ * (12) code complete!
+ * <p>
  * <p>
  * GENERAL RULE:
  * FWD: leftPower = midPower - driveSteering;
@@ -241,10 +253,6 @@ import com.qualcomm.robotcore.hardware.Servo;
  * <p>
  * <p>
  * <p>
- * Checklist:
- * pass a variable for the degree turn to the white line as a parameter XX
- * check ACORN line follow (left sensor right side line check) XX
- * servo values init
  */
 
 
@@ -481,7 +489,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax41 extends LinearOpMode
 
         while (this.opModeIsActive() && runMe) {     //the op mode is active conditional forces the code to stop once the driver station specifies
             /**
-             * Each step refers to the steps in the movement from Tx30
+             * Each step refers to the steps in the movement from Tx40
              */
 
 
@@ -1185,7 +1193,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax41 extends LinearOpMode
             driveRightBack.setPower(rightPower);
 
         } while (
-                this.getRuntime() < 6 && this.opModeIsActive() && currentHeading < (-90+checkRotationDegreeDelta) && !lineDetected);
+                this.getRuntime() < 6 && this.opModeIsActive() && currentHeading < (-90 + checkRotationDegreeDelta) && !lineDetected);
 
         stillAtWhiteLine = lineDetected;
 
@@ -1415,6 +1423,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax41 extends LinearOpMode
 
     }
 
+
     void proportionalLineFollowForDistanceWithACORNRightSideOfLineLeftSideSensor(double distance, double midPower) {
         /*
          * How to use this method:
@@ -1471,8 +1480,8 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax41 extends LinearOpMode
 
             driveSteering = proportionalODSError * driveGain; //this would be -
 
-            leftPower = midPower + driveSteering;                           //This allows the right side of the robot to move at a constant speed
-            rightPower = midPower;                                          //left side is the one that gets altered with the driving
+            leftPower = midPower;                           //This allows the right side of the robot to move at a constant speed
+            rightPower = midPower - driveSteering;                                          //left side is the one that gets altered with the driving
             if (leftPower > 1.0) {                                         //Addition because need to decrease power when more white is seen
                 leftPower = 1.0;
             }
