@@ -6,26 +6,24 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 
-
 /**
  * FTC Team 9804 Bomb Squad -- Autonomous
  * Made by the programmers of FTC Team 9804 Bomb Squad
  * <p>
  * Drives a predetermined set distance
  * <p>
+ * <p>
  * Ax10 4-8-16 at 8:32 pm Steve -- introduce new autonomous blue program with optical distance sensor methods
  * Ax11 4-8-16 at 9:13 pm Steve -- new code with layout of movement patterns
  * Ax21 4-9-16 at 6:35 pm Steve -- code with primitive line follow
  * Ax22 4-9-16 at 6:59 pm Steve -- code with v1 of proportional line follow
  * Ax23 4-9-16 at 7:57 pm Steve -- code with revised layout of movement patterns
- * Ax31 4-16-16 at 6:52 pm Steve -- updated comments throughout code
- * Ax32 4-16-16 at 6:59 pm Steve -- updated code with center of rotation adjusted for proportional line follows; code adjusted based on new movement protocol
- * Ax33 4-20-16 at 4:49 pm Steve & Etienne -- updated code with new autonomous robot movement, new method for calculating distance on white line
- * Ax34 4-20-16 at 8:05 pm Steve & Etienne -- update code with logic and proportional control revisions but more importantly changed names of ir to match r and l
- * Ax35 4-21-16 at 3:56 pm Steve & Etienne -- updated code to new plan for movement and changed the followline number
- * Ax36 4-21-16 at 5:32 pm Steve & Etienne -- updated servo initializations and motors
- * Ax40 4-22-16 at 4:30 pm Etienne -- new robot autonomous movement and new method organization
- * Ax41 4-22-16 at 8:47 pm Steve & Etienne -- update code with updated movement and new methods
+ * Ax33 4-20-16 at 6:08 pm Etienne & Steve -- updated code with new autonomous robot movement, new method for calculating distance on white line
+ * Ax34 4-20-16 at 7:53 pm Steve & Etienne -- updated cde with logic and proportional control revisions
+ * Ax35 4-21-16 at 3:49 pm Steve & Etienne -- updated with new robot movement and adjusted ods values; added telemetry to ods sensor
+ * Ax36 4-21-16 at 5:27 pm Steve & Etienne -- updated code with new motors/servos/servo positions; updated comments
+ * Ax41 4-21-16 at 9:33 pm Steve & Etienne -- updated code with new auto movement for RED
+ * <p>
  * <p>
  * <p>
  * <p>
@@ -59,39 +57,37 @@ import com.qualcomm.robotcore.hardware.Servo;
  * (10) Code complete, exit loop -- further autonomous codes have different finish options
  * <p>
  * <p>
+ * <p>
+ * ~~~~MOVEMENT_(VERSION Tx12){Setup: right side edge of first box from mountain}~~~~
+ * (1) Drive forward 1 full tile lengths (24 inches)
+ * (2) Pivot 45º counter clockwise
+ * (3) Drive until white line is sensed w/ right ods sensor
+ * (4) High-gain left side line follow w/ right ods sensor for 12 inches
+ * (5) Backup to red line with right ods
+ * (6) Drive until white line is sensed w/ right ods sensor
+ * (7) Medium-gain left side line follow w/ right ods sensor for 12 inches
+ * (8) Backup to red line with right ods
+ * (9) Drive until white line is sensed w/ right ods sensor
+ * (10) Low-gain left side line follow w/ right ods sensor for 12 inches
+ * (11) Backup to red line with right ods
+ * (12) Medium gain left side line follow w/ right ods sensor for 24 inches
+ * (13) Score climbers
+ * (14) Code complete, exit while loop
+ * <p>
  * ~~~~SETUP_(VERSION Tx21)~~~~
- * (1) Right side of the robot is in the middle of second full tile from mountain
- * <p>
- * <p>
- * ~~~~MOVEMENT_(VERSION Tx21)~~~~
- * (1) Record angle
- * (2) Drive backwards 1 full tile (24 inches)
- * (3) Rotate 45º clockwise
- * (4) Drive backwards until white line is seen w/ left IR sensor
- * (5) Record angle
- * (6) Drive forwards away from white line until blue line is seen WHILE RECORDING DISTANCE
- * (7) leg of triangle along white line is sin(theta)*hypotenuse
- * (8) Drive forward until white line is sensed
- * (9) overshoot by 6inches
- * (10) 45º rotation clockwise
- * (12 Drive forward for 6 inches
- * (13) score
- * (14)
- * <p>
- * <p>
- * ~~~~SETUP (continue using Tx21)
+ * (1) Right side of the robot is in the middle of first full tile from mountain
  * <p>
  * ~~~~MOVEMENT_(VERSION Tx22)~~~~
  * (1) Record angle
  * (2) Drive backwards 1 full tile (24 inches)
- * (3) Rotate 45º clockwise
- * (4) Drive backwards until white line is seen w/ left IR sensor
+ * (3) Rotate 45º counter-clockwise
+ * (4) Drive backwards until white line is seen w/ right ods sensor
  * (5) Record angle
  * (6) Drive forwards away from white line until blue line is seen WHILE RECORDING DISTANCE
  * (7) leg of triangle along white line is sin(theta)*hypotenuse
  * (8) Loop until conditions are met
  * Substeps for loop
- * -1- Spin move counter-clockwise to new desired heading (delta variable **TEST THIS**)
+ * -1- Spin move clockwise to new desired heading (delta variable **TEST THIS**)
  * -2- drive backwards until white line is sensed
  * -3- drive forwards to the blue line while counting recorder counts and converting to inches
  * -4- check to see if conditions are met, if so, EXIT loop
@@ -102,75 +98,42 @@ import com.qualcomm.robotcore.hardware.Servo;
  * (12) code complete!
  * <p>
  * <p>
- * ~~~~SETUP (continue using Tx21)
  * <p>
- * ~~~~MOVEMENT_(VERSION Tx22)~~~~
- * All the steps correspond to actual steps in the op mode
  * <p>
+ * <p>
+ * * ~~~~SETUP_(VERSION Tx21)~~~~
+ * (1) left side of the robot is in the middle of second full tile from mountain
+ * <p>
+ * ~~~~MOVEMENT_(VERSION Tx23)~~~~
  * (1) Record angle
  * (2) Drive backwards 1 full tile (24 inches)
- * (3) Rotate 45º clockwise
- * (4) Drive backwards until white line is seen w/ left IR sensor
+ * (3) Rotate 45º counter-clockwise
+ * (4) Drive backwards until white line is seen w/ right ods sensor
  * (5) Record angle
  * (6) Drive forwards away from white line until blue line is seen WHILE RECORDING DISTANCE
  * (7) leg of triangle along white line is sin(theta)*hypotenuse
  * (8) Loop until conditions are met
  * Substeps for loop
- * -1- Spin move counter-clockwise to new desired heading (delta variable **TEST THIS**)
+ * -1- Spin move clockwise to new desired heading (delta variable **TEST THIS**)
  * -2- drive backwards until white line is sensed
  * -3- drive forwards to the blue line while counting recorder counts and converting to inches
  * -4- check to see if conditions are met, if so, EXIT loop
  * $if not, repeat
  * (9) drive to the white line backwards
- * (10) drive backwards until blue line is seen (on the other side)
- * (11) spin counter-clockwise until white line is sensed (we now know we are roughly 9.5 inches from the wall)
- * (12) line-follow for a distance of 7.5 inches (9.5 - 2 for the shelter drop)
- * (13) once distance is reached, stop and score
- * (14) code complete!
- * <p>
- * <p>
- * <p>
- * <p>
- * ~~~~~~~~~MOVEMENT Ax30 (BLUE!!!)~~~~~~~~~
+ * (10) overshoot to red line
+ * (11) spin move to white line counter clockwise
+ * (12) proportional line follow with adjusted center of rotation navigation (ACORN) for 9.5 inches
+ * (13) stop when robot is five inches from the wall
+ * (14) once distance is reached, stop and score
+ * (15) code complete!
  * All the steps correspond to actual steps in the op mode
- * Continue using setup version Tx21
- * (1) Record angle
- * (2) Drive backwards 1 full tile (24 inches)
- * (3) Rotate 45º clockwise
- * (4) Drive backwards until white line is seen w/ left (driving backwards) ODS sensor
- * (5) Record angle
- * (6) Drive backwards for estimated distance of 6.8 inches at which point the left tread is on the white at same heading
- * (7) spin another -45 degrees or global -90 or 45 degrees clockwise (all synonymous)
- * (8) Now begin the loop (sub-steps)
- * -1- move forwards 6 inches (a big value for the first test)
- * -2-spin counter-clockwise with three different "OR" conditionals
- * -> TIME
- * -> WHITE LINE DETECTED
- * -> 20 DEGREES REACHED
- * -3- If line is detected within the 20 degrees delta and time constraint, repeat loop
- * -4- Else if the line is not detected anymore because you have gone past the white line, go backwards 6 inches and start new loop:
- * >> move forwards one inch (small distance for precise check)
- * >> spin counter-clockwise with the same three or constraints (TIME, WHITE LINE DETECTED, 20 DEGREES REACHED )
- * >> If line is detected within the 20 degrees delta and time constraint, repeat loop
- * >> Else if the line is not detected, we know we are at the end of the line so exit loop
- * (9) Move forward one inch and spin counter clockwise until white line is seen.
- * (10) ACORN line follow for 20 (estimate) inches
- * (11) stop and score climbers
- * (12) code complete
  * <p>
- * Some Notes:
  * <p>
- * -When parallel to the white line the angle delta to white line should be between ***5 and 10*** degrees. If you have
- * gone ***20*** (needs to be tested)degrees you have definitely missed the line entirely.
+ * ~~~~MOVEMENT_(VERSION Tx24)~~~~
+ * (1)
  * <p>
- *
- * ~~~~~~~~~MOVEMENT Ax40 (BLUE!!!)~~~~~~~~~
- * -All the steps correspond to actual steps in the op mode
- * -Continue using setup version Tx21
- * (1) Drive straight backwards from wall at a 0 degree angle. (When initializing the gyro, 0 degrees is set)
- * (2)
- *
- *
+ * <p>
+ * <p>
  * <p>
  * GENERAL RULE:
  * FWD: leftPower = midPower - driveSteering;
@@ -180,9 +143,10 @@ import com.qualcomm.robotcore.hardware.Servo;
  * Heading = ABSOLUTE heading of the robot on the field
  * Distance = INCREMENTAL distance of the robot on the field
  * <p>
- * referencing floorIR in this program call values from irl, which is the ODS on the left side of the robot, used when blue
+ * referencing floorODS in this program call values from irr, which is the ods on the right side of the robot, used when red
  * <p>
- * ACORN = adjusted center of rotation navigation; we use this for our proportional line follow because our ODS sensors are off centered
+ * <p>
+ * ACORN = adjusted center of rotation navigation; we use this for our proportional line follow because our ods sensors are off centered
  * <p>
  * <p>
  * <p>
@@ -224,14 +188,14 @@ import com.qualcomm.robotcore.hardware.Servo;
  * <p>
  * FOR THE WHITE LINE DETECTION, THE FUNCTION IS WRITTEN. THESE THINGS NEED TO BE ADDED
  * <p>
- * //This assigns the raw infared value to RawDetectedLight
- * RawDetectedLight = floorODS.getLightDetectedRaw();
+ * //This assigns the raw infared value to RawDetectedODS
+ * RawDetectedODS = floorODS.getLightDetectedRaw();
  * <p>
  * //sends the value to the function where true/false wil be assigned
- * foundWhiteLine(RawDetectedLight);
+ * foundWhiteLine(RawDetectedODS);
  * <p>
  * //declare the ODS Sensor aimed at the floor.
- * OpticalDistanceSensor floorODS = (OpticalDistanceSensor) hardwareMap.gyroSensor.get("ods1");
+ * OpticalDistanceSensor floorODS = (OpticalDistanceSensor) hardwareMap.gyroSensor.get("ods");
  * <p>
  * <p>
  * NOTE ABOUT THE CODE:
@@ -239,16 +203,22 @@ import com.qualcomm.robotcore.hardware.Servo;
  * we include a stop motors and a wait one full hardware cycle after EVERY hardware command
  * <p>
  * <p>
+ * Center of Rotation adjustment notes:
+ * If the sensor is on the right side of the robot:
+ * Right motor = mid power
+ * Left motor = mid power + proportional steering value (error * gain)
  * <p>
  * <p>
- * Checklist:
- * pass a variable for the degree turn to the white line as a parameter XX
- * check ACORN line follow (left sensor right side line check) XX
- * servo values init
+ * <p>
+ * <p>
+ * CHECKLIST TO DO:
+ * CALCULATE THE DISTANCE LEFT TO GO REGARDING THE ARC LENGTH
+ * SPEED UP ON STRAIGHTAWAYS AND SLOW DOWN AS WE GET CLOSER TO TARGET
+ * ADD THE PROPORTIONAL LINE FOLLOW IN THE CODE FOR 5 INCHES LEFT TO SHELTER
  */
 
 
-public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax41 extends LinearOpMode {
+public class Worlds_9804_RED_ClimbersFarStartUsingODS_Ax41 extends LinearOpMode {
 
     /**
      * DRIVE MOTORS
@@ -485,7 +455,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax41 extends LinearOpMode
              */
 
 
-            //step 1
+            //step 2
             driveStraightBackwards(0, 24, 0.7);
 
             waitOneFullHardwareCycle();
@@ -494,7 +464,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax41 extends LinearOpMode
 
             waitOneFullHardwareCycle();
 
-            //step 2
+            //step 3
             spinMoveClockwise(-45);
 
             waitOneFullHardwareCycle();
@@ -503,7 +473,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax41 extends LinearOpMode
 
             waitOneFullHardwareCycle();
 
-            //step 3
+            //step 3.5
             driveStraightBackwards(-45, 72, 0.7);
 
             waitOneFullHardwareCycle();
@@ -541,7 +511,6 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax41 extends LinearOpMode
 
             while (this.opModeIsActive() && this.getRuntime() < 20 && stillAtWhiteLine) {
 
-                //sub-step 1
                 driveStraightForwards(-90, 4.0, 0.5);
 
                 waitOneFullHardwareCycle();
@@ -550,7 +519,6 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax41 extends LinearOpMode
 
                 waitOneFullHardwareCycle();
 
-                //sub-step 2
                 //this function will keep turning counter clockwise until it does not see white.
                 //Then it will set stillAtWhiteLine = false;
                 spinMoveCounterClockwiseToCheckForWhiteLine(CHECK_TO_WHITE_LINE_DELTA);
@@ -561,7 +529,6 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax41 extends LinearOpMode
 
                 waitOneFullHardwareCycle();
 
-                //sub-step 3
                 spinMoveClockwise(-90);
 
                 waitOneFullHardwareCycle();
@@ -574,7 +541,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax41 extends LinearOpMode
 
             }
 
-            //step 8
+            //step 7.5
 
             driveStraightBackwards(-90, 4.0, 0.5);
 
@@ -584,7 +551,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax41 extends LinearOpMode
 
             waitOneFullHardwareCycle();
 
-            //step 9
+            //step 8
             spinMoveCounterClockwiseUntilWhiteLineIsDetected();
 
             waitOneFullHardwareCycle();
@@ -593,7 +560,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax41 extends LinearOpMode
 
             waitOneFullHardwareCycle();
 
-            //step 10
+            //step 9
             proportionalLineFollowForDistanceWithACORNRightSideOfLineLeftSideSensor(15, 0.5); //distance of 20 needs to be checked
 
             waitOneFullHardwareCycle();
@@ -602,7 +569,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax41 extends LinearOpMode
 
             waitOneFullHardwareCycle();
 
-            //step 11
+            //step 10
             scoreShelterDrop(2);
 
             waitOneFullHardwareCycle();
@@ -611,7 +578,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax41 extends LinearOpMode
 
             waitOneFullHardwareCycle();
 
-            //step 12
+            //step 11
 
             telemetry.addData("CODE COMPLETE", telemetryVariable);
 
