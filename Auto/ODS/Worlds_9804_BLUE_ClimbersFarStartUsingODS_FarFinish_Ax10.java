@@ -14,24 +14,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
  * <p>
  * Drives a predetermined set distance
  * <p>
- * Ax10 4-8-16 at 8:32 pm Steve -- introduce new autonomous blue program with optical distance sensor methods
- * Ax11 4-8-16 at 9:13 pm Steve -- new code with layout of movement patterns
- * Ax21 4-9-16 at 6:35 pm Steve -- code with primitive line follow
- * Ax22 4-9-16 at 6:59 pm Steve -- code with v1 of proportional line follow
- * Ax23 4-9-16 at 7:57 pm Steve -- code with revised layout of movement patterns
- * Ax31 4-16-16 at 6:52 pm Steve -- updated comments throughout code
- * Ax32 4-16-16 at 6:59 pm Steve -- updated code with center of rotation adjusted for proportional line follows; code adjusted based on new movement protocol
- * Ax33 4-20-16 at 4:49 pm Steve & Etienne -- updated code with new autonomous robot movement, new method for calculating distance on white line
- * Ax34 4-20-16 at 8:05 pm Steve & Etienne -- update code with logic and proportional control revisions but more importantly changed names of ir to match r and l
- * Ax35 4-21-16 at 3:56 pm Steve & Etienne -- updated code to new plan for movement and changed the followline number
- * Ax36 4-21-16 at 5:32 pm Steve & Etienne -- updated servo initializations and motors
- * Ax40 4-22-16 at 4:30 pm Etienne -- new robot autonomous movement and new method organization
- * Ax41 4-22-16 at 8:47 pm Steve & Etienne -- update code with updated movement and new methods
- * Ax42 4-22=16 at 10:15 pm Steve -- code with updated timeouts and comments;  add window wiper before driving forwards
- * Ax43 4-23-16 at 12:32 pm Etienne -- updated code with updated servo initialize variables for blue
- * Ax50 4-23-16 at 3:34 pm Etienne & Bridget -- updated code and added the things we saw from testing: made new gain, clipped right instead of left and cleaned up sensor declaration and initialization
- * Ax51 4-23-16 at 4:13 pm Etienne & Bridget -- updated code with changes to encoders in ACORN Right side Left Sensor and variables for ACORN Distance and score time
- * Ax52 4-23-16 at 7:13 pm Steve & Bridget -- update code with spin motors; new comments; adjusted dates; increased overall speeds
+ * Ax10 4-23-16 at 7:34 pm Steve -- introduce new code with a far finish
  * <p>
  * <p>
  * <p>
@@ -191,14 +174,41 @@ import com.qualcomm.robotcore.hardware.ServoController;
  * (10.5) enable the servo controller that hosts the shelterDrop servo
  * (11) score shelter drop
  * (12) code complete!
- *
+ * <p>
+ * <p>
+ * ~~~~~~~~~MOVEMENT Ax50 (BLUE!!!)~~~~~~~~~
+ * -All the steps correspond to actual steps in the op mode
+ * -Continue using setup version Tx21
+ * (0) Disable all servo controllers so that they are not draining energy while the robot is powered
+ * (1) Drive straight backwards from wall at a 0 degree angle. (When initializing the gyro, 0 degrees is set)
+ * (2) spin move clockwise 45º
+ * (3) drive straight backwards high speed for 72 inches
+ * (4) drive until white line is seen at medium-low speed
+ * (5) overshoot by 6.8 inches
+ * (6) spin move clockwise 45º (global position is now -90º)
+ * (7) enter loop for checking if we are next to white line; exit when time runs out or we are no longer next to line
+ * (7.1) drive forwards 4 inches (away from the beacon)
+ * (7.2) spin counter clockwise until line is seen or we reach a maximum angle
+ * (7.3) spin clockwise back to global heading of -90º
+ * ***NOW THE ROBOT IS SLIGHTLY BEYOND THE TIP OF THE WHITE LINE*** (facing the beacon)
+ * (8) drive straight backwards 4 inches
+ * (9) spin move counter clockwise until white line is detected, back to earlier position
+ * (10) ACORN proportional line follow for 15 inches
+ * (10.5) enable the servo controller that hosts the shelterDrop servo
+ * (11) score shelter drop
+ * (12) back up out of the way, 18 inches
+ * (13) 180º turn
+ * (14) back up 4 feet
+ * (15) code complete!
+ * <p>
+ * <p>
  * NOTES:
- *      -> This auto program uses a variable called "CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE."
- *      -> This auto program also uses the idle wheel for accurate encoder measurements to prevent backlash
- *      -> This means that this auto program uses CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE for the forwards value when checking
- *          and the value for going backwards once we exit the loop. In this auto, THE SECOND DISTANCE IS NOT GREATER!!!!
- *      ->
- *      ->
+ * -> This auto program uses a variable called "CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE."
+ * -> This auto program also uses the idle wheel for accurate encoder measurements to prevent backlash
+ * -> This means that this auto program uses CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE for the forwards value when checking
+ * and the value for going backwards once we exit the loop. In this auto, THE SECOND DISTANCE IS NOT GREATER!!!!
+ * ->
+ * ->
  * <p>
  * <p>
  * GENERAL RULE:
@@ -271,7 +281,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
  */
 
 
-public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode {
+public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_FarFinish_Ax10 extends LinearOpMode {
 
     ServoController servoControllerPink, servoControllerWhite;
 
@@ -671,6 +681,31 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
 
             //step 12
 
+            currentGlobalHeadingForSpinMoves = gyro.getIntegratedZValue();
+
+            driveStraightForwards(currentGlobalHeadingForSpinMoves, 18, 0.8);
+
+            waitOneFullHardwareCycle();
+
+            stopMotors();
+
+            waitOneFullHardwareCycle();
+
+            //step 13
+
+            spinMoveCounterClockwise((currentGlobalHeadingForSpinMoves+180));
+
+            waitOneFullHardwareCycle();
+
+            stopMotors();
+
+            waitOneFullHardwareCycle();
+
+            //step 14
+
+            driveStraightBackwards(currentGlobalHeadingForSpinMoves+180, 48, 0.8);
+
+            //step 15
             // de-energize the servos
             servoControllerWhite.pwmDisable();
             servoControllerPink.pwmDisable();
@@ -1092,7 +1127,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
                 lineDetected = true;
             }
 
-            telemetry.addData("ods1 Blue rear left ",  floorODS.getLightDetectedRaw());
+            telemetry.addData("ods1 Blue rear left ", floorODS.getLightDetectedRaw());
 
             spin.setPower(1);  // Eject debris while driving, to clear path
 
@@ -1561,16 +1596,16 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
 
         //takes the initial position of the encoders to establish a starting point for the distance
         initialEncCountLeft = driveLeftFront.getCurrentPosition();      //here we are using the LEFT FRONT ENCODER because it is on an idle wheel and
-                                                                        //it also is closer to the ACORN side
-                                                                        //During testing we found that the treads had backlash and
-                                                                        //using an idle wheel was thought to fix it. Has not been tested.
+        //it also is closer to the ACORN side
+        //During testing we found that the treads had backlash and
+        //using an idle wheel was thought to fix it. Has not been tested.
 
 
         do {
             spin.setPower(1);  // Eject debris while driving, to clear path
 
             currentEncDeltaCountLeft = driveLeftFront.getCurrentPosition() - initialEncCountLeft;         //the current - initial will give the
-                                                                                                          // current distance of the encoders
+            // current distance of the encoders
 
             EncErrorLeft = targetEncoderCounts - Math.abs(currentEncDeltaCountLeft);                     //the error is the delta between the target counts and current counts
 
