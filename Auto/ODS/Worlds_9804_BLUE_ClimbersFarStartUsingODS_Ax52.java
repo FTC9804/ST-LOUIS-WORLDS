@@ -28,10 +28,10 @@ import com.qualcomm.robotcore.hardware.ServoController;
  * Ax40 4-22-16 at 4:30 pm Etienne -- new robot autonomous movement and new method organization
  * Ax41 4-22-16 at 8:47 pm Steve & Etienne -- update code with updated movement and new methods
  * Ax42 4-22=16 at 10:15 pm Steve -- code with updated timeouts and comments;  add window wiper before driving forwards
- * Ax43 4-22-16 at 12:32 pm Etienne -- updated code with updated servo initialize variables for blue
- * Ax50 4-22-16 at 3:34 pm Etienne & Bridget -- updated code and added the things we saw from testing: made new gain, clipped right instead of left and cleaned up sensor declaration and initialization
- * Ax51 4-22-16 at 4:13 pm Etienne & Bridget -- updated code with changes to encoders in ACORN Right side Left Sensor and variables for ACORN Distance and score time
- * Ax52 4-22-16 at 7:13 pm Steve & Bridget -- update code with spin motors; new comments; adjusted dates
+ * Ax43 4-23-16 at 12:32 pm Etienne -- updated code with updated servo initialize variables for blue
+ * Ax50 4-23-16 at 3:34 pm Etienne & Bridget -- updated code and added the things we saw from testing: made new gain, clipped right instead of left and cleaned up sensor declaration and initialization
+ * Ax51 4-23-16 at 4:13 pm Etienne & Bridget -- updated code with changes to encoders in ACORN Right side Left Sensor and variables for ACORN Distance and score time
+ * Ax52 4-23-16 at 7:13 pm Steve & Bridget -- update code with spin motors; new comments; adjusted dates
  * <p>
  * <p>
  * <p>
