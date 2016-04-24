@@ -29,7 +29,8 @@ import com.qualcomm.robotcore.hardware.ServoController;
  * Ax41 4-22-16 at 8:47 pm Steve & Etienne -- update code with updated movement and new methods
  * Ax42 4-22=16 at 10:15 pm Steve -- code with updated timeouts and comments;  add window wiper before driving forwards
  * Ax43 4-22-16 at 12:32 pm Etienne -- updated code with updated servo initialize variables for blue
- * Ax50 4-22-16 at 3:34 pm Etienne & Bridget -- updated code and added the things we saw from testing. Will add more when we know what we add
+ * Ax50 4-22-16 at 3:34 pm Etienne & Bridget -- updated code and added the things we saw from testing: made new gain, clipped right instead of left and cleaned up sensor declaration and initialization
+ * Ax51 2-22-16 at 4:13 pm Etienne & Bridget --updated code with changes to encoders in ACORN Right side Left Sensor and variables for ACORN Distance and score time
  * <p>
  * <p>
  * <p>
@@ -168,9 +169,10 @@ import com.qualcomm.robotcore.hardware.ServoController;
  * gone ***20*** (needs to be tested)degrees you have definitely missed the line entirely.
  * <p>
  * <p>
- * ~~~~~~~~~MOVEMENT Ax40 (BLUE!!!)~~~~~~~~~
+ * ~~~~~~~~~MOVEMENT Ax41 (BLUE!!!)~~~~~~~~~
  * -All the steps correspond to actual steps in the op mode
  * -Continue using setup version Tx21
+ * (0) Disable all servo controllers so that they are not draining energy while the robot is powered
  * (1) Drive straight backwards from wall at a 0 degree angle. (When initializing the gyro, 0 degrees is set)
  * (2) spin move clockwise 45º
  * (3) drive straight backwards high speed for 72 inches
@@ -185,8 +187,17 @@ import com.qualcomm.robotcore.hardware.ServoController;
  * (8) drive straight backwards 4 inches
  * (9) spin move counter clockwise until white line is detected, back to earlier position
  * (10) ACORN proportional line follow for 15 inches
+ * (10.5) enable the servo controller that hosts the shelterDrop servo
  * (11) score shelter drop
  * (12) code complete!
+ *
+ * NOTES:
+ *      -> This auto program uses a variable called "CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE."
+ *      -> This auto program also uses the idle wheel for accurate encoder measurements to prevent backlash
+ *      -> This means that this auto program uses CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE for the forwards value when checking
+ *          and the value for going backwards once we exit the loop. In this auto, THE SECOND DISTANCE IS NOT GREATER!!!!
+ *      ->
+ *      ->
  * <p>
  * <p>
  * GENERAL RULE:
@@ -197,7 +208,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
  * Heading = ABSOLUTE heading of the robot on the field
  * Distance = INCREMENTAL distance of the robot on the field
  * <p>
- * referencing floorIR in this program call values from irl, which is the ODS on the left side of the robot, used when blue
+ * referencing floorODS in this program call values from ods1, which is the ODS on the left side of the robot, used when blue
  * <p>
  * ACORN = adjusted center of rotation navigation; we use this for our proportional line follow because our ODS sensors are off centered
  * <p>
@@ -259,7 +270,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
  */
 
 
-public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax50 extends LinearOpMode {
+public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax51 extends LinearOpMode {
 
     ServoController servoControllerPink, servoControllerWhite;
 
@@ -397,6 +408,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax50 extends LinearOpMode
     double shelterDropPosition = shelterDropInitialize;
     double ziplineBarInitialize = 0;
     double ziplineBarPosition = ziplineBarInitialize;
+    double shelterDropTime = 3;
 
     //variables for auto
     int initialGyroHeading;
@@ -413,6 +425,8 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax50 extends LinearOpMode
     static int DELTADEGREESPINMOVE = 10;
     boolean stillAtWhiteLine = true;
     static double CHECK_TO_WHITE_LINE_DELTA = 20;
+    static double ACORN_LINE_FOLLOW_DISTANCE = 14;
+    static double CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE = 2.5;
 
 
     //ODS VARIABLES
@@ -554,7 +568,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax50 extends LinearOpMode
             waitOneFullHardwareCycle();
 
             //step 5
-            driveStraightBackwards(-45, 6.8, 0.5); //6.8 is the overshoot distance that ***HAS NOT BEEN TESTED***
+            driveStraightBackwards(-45, 6.8, 0.5); //6.8 is the overshoot distance that ***TESTED***
 
             waitOneFullHardwareCycle();
 
@@ -580,7 +594,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax50 extends LinearOpMode
                 windowWiperActivate();
 
                 //sub-step 1
-                driveStraightForwards(-90, 4.0, 0.5);
+                driveStraightForwards(-90, CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE, 0.5);
 
                 waitOneFullHardwareCycle();
 
@@ -614,7 +628,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax50 extends LinearOpMode
 
             //step 8
 
-            driveStraightBackwards(-90, 4.0, 0.5);
+            driveStraightBackwards(-90, CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE, 0.5); //THE DISTANCE IS 1.5 GREATER BECAUSE OF BACKLASH
 
             waitOneFullHardwareCycle();
 
@@ -632,7 +646,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax50 extends LinearOpMode
             waitOneFullHardwareCycle();
 
             //step 10
-            proportionalLineFollowForDistanceWithACORNRightSideOfLineLeftSideSensor(14, 0.5); //distance of 20 needs to be checked
+            proportionalLineFollowForDistanceWithACORNRightSideOfLineLeftSideSensor(ACORN_LINE_FOLLOW_DISTANCE, 0.5); //distance of 20 needs to be checked
 
             waitOneFullHardwareCycle();
 
@@ -646,7 +660,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax50 extends LinearOpMode
             servoControllerPink.pwmEnable();
 
             //step 11
-            scoreShelterDrop(2);
+            scoreShelterDrop(shelterDropTime);
 
             waitOneFullHardwareCycle();
 
@@ -1527,16 +1541,17 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax50 extends LinearOpMode
         this.resetStartTime();
 
         //takes the initial position of the encoders to establish a starting point for the distance
-        initialEncCountLeft = driveLeftBack.getCurrentPosition();
-        initialEncCountRight = driveRightBack.getCurrentPosition();
+        initialEncCountLeft = driveLeftFront.getCurrentPosition();      //here we are using the LEFT FRONT ENCODER because it is on an idle wheel and
+                                                                        //it also is closer to the ACORN side
+                                                                        //During testing we found that the treads had backlash and
+                                                                        //using an idle wheel was thought to fix it. Has not been tested.
 
 
         do {
             spin.setPower(1);  // Eject debris while driving, to clear path
 
-            currentEncDeltaCountLeft = driveLeftBack.getCurrentPosition() - initialEncCountLeft;         //the current - initial will give the
-            currentEncDeltaCountRight = driveRightBack.getCurrentPosition() - initialEncCountRight;      //current distance of the encoders
-
+            currentEncDeltaCountLeft = driveLeftFront.getCurrentPosition() - initialEncCountLeft;         //the current - initial will give the
+                                                                                                          // current distance of the encoders
 
             EncErrorLeft = targetEncoderCounts - Math.abs(currentEncDeltaCountLeft);                     //the error is the delta between the target counts and current counts
 
