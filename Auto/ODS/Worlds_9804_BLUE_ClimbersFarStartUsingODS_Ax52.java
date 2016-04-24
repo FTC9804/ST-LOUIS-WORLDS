@@ -31,7 +31,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
  * Ax43 4-23-16 at 12:32 pm Etienne -- updated code with updated servo initialize variables for blue
  * Ax50 4-23-16 at 3:34 pm Etienne & Bridget -- updated code and added the things we saw from testing: made new gain, clipped right instead of left and cleaned up sensor declaration and initialization
  * Ax51 4-23-16 at 4:13 pm Etienne & Bridget -- updated code with changes to encoders in ACORN Right side Left Sensor and variables for ACORN Distance and score time
- * Ax52 4-23-16 at 7:13 pm Steve & Bridget -- update code with spin motors; new comments; adjusted dates; increased overall speeds
+ * Ax52 4-23-16 at 7:13 pm Steve & Bridget -- update code with spin motors; new comments; adjusted dates; increased overall speeds; changed the gain code
  * <p>
  * <p>
  * <p>
@@ -760,7 +760,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
 
         //SPIN MOVE
 
-        driveGain = 0.05;       //OK for spin move
+        driveGainODS = 0.005;       //OK for spin move
         targetHeading = heading;    //CCW (using signed heading) (positive value CCW)
 
         this.resetStartTime();
@@ -779,7 +779,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
             headingError = targetHeading - currentHeading;//for CCW spin from 0 to +º, error always positive
 
             //drive steering for proportional control
-            driveSteering = headingError * driveGain;     //positive value for CCW
+            driveSteering = headingError * driveGainODS;     //positive value for CCW
 
             //for CCW spin, left tread runs backwards
             leftPower = -driveSteering;
@@ -826,7 +826,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
          */
         //SPIN MOVE
 
-        driveGain = 0.05;       //OK for spin
+        driveGainODS = 0.005;       //OK for spin
         targetHeading = heading;    //90º CW (using signed heading) (positive value CCW)
 
         this.resetStartTime();
@@ -844,7 +844,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
             headingError = targetHeading - currentHeading;//for CW spin from 0 to -º, error always negative
 
             //drive steering for proportional control
-            driveSteering = headingError * driveGain;         //negative value
+            driveSteering = headingError * driveGainODS;         //negative value
 
             //for CW spin, left tread runs forwards
             leftPower = -driveSteering;
@@ -892,7 +892,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
         //clear the previous telemetry output on the phones
         telemetry.clearData();
 
-        driveGain = 0.05;           //gain used for proportional steering
+        driveGainODS = 0.005;           //gain used for proportional steering
         targetHeading = heading;        //drive straight ahead, same heading
 
         targetDistance = distance;      //distance given in the parameters
@@ -935,7 +935,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
             headingError = targetHeading - currentHeading;      //positive if pointing too far CW
 
             //calculates the drive steering for proportional control
-            driveSteering = headingError * driveGain;           //positive if pointing too far CW
+            driveSteering = headingError * driveGainODS;           //positive if pointing too far CW
 
             leftPower = midPower - driveSteering;
             if (leftPower > 1) {
@@ -980,7 +980,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
 
         telemetry.clearData();      //clear all telemetry data before starting
 
-        driveGain = 0.05;           //gain for proportional control
+        driveGainODS = 0.005;           //gain for proportional control
 
         targetHeading = heading;                //drive straight ahead at the initial/default heading
 
@@ -1022,7 +1022,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
 
             headingError = targetHeading - currentHeading;  //find the error between the headings
 
-            driveSteering = headingError * driveGain;       //create the proportion for the steering
+            driveSteering = headingError * driveGainODS;       //create the proportion for the steering
 
             leftPower = midPower + driveSteering;           //adds the drive steering to midpower because we are driving backwards
             if (leftPower > 1.0) {                            //cuts ourselves off at 1, the maximum motor power
@@ -1073,7 +1073,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
 
         telemetry.clearData();      //clear all telemetry data before starting
 
-        driveGain = 0.05;           //gain for proportional control
+        driveGainODS = 0.005;           //gain for proportional control
 
         targetHeading = heading;                //drive straight ahead at the initial/default heading
 
@@ -1102,7 +1102,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
 
             headingError = targetHeading - currentHeading;  //find the error between the headings
 
-            driveSteering = headingError * driveGain;       //create the proportion for the steering
+            driveSteering = headingError * driveGainODS;       //create the proportion for the steering
 
             leftPower = midPower + driveSteering;           //adds the drive steering to midpower because we are driving backwards
             if (leftPower > 1.0) {                            //cuts ourselves off at 1, the maximum motor power
@@ -1146,7 +1146,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
 
         //SPIN MOVE
 
-        driveGain = 0.05;       //OK for spin move
+        driveGainODS = 0.005;       //OK for spin move
 
         this.resetStartTime();
 
@@ -1203,7 +1203,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
 
         //SPIN MOVE
 
-        driveGain = 0.05;       //OK for spin move
+        driveGainODS = 0.005;       //OK for spin move
 
         this.resetStartTime();
 
@@ -1267,7 +1267,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
 
         //SPIN MOVE
 
-        driveGain = 0.05;       //OK for spin move
+        driveGainODS = 0.005;       //OK for spin move
 
         this.resetStartTime();
 
@@ -1328,7 +1328,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
 
         //SPIN MOVE
 
-        driveGain = 0.05;       //OK for spin move
+        driveGainODS = 0.005;       //OK for spin move
 
         this.resetStartTime();
 
@@ -1388,7 +1388,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
 
         telemetry.clearData();      //clear all telemetry data before starting
 
-        driveGain = 0.05;           //gain for proportional control
+        driveGainODS = 0.005;           //gain for proportional control
 
         targetDistance = distance;              //drive straight given inches from parameter
 
@@ -1427,7 +1427,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
 
             proportionalODSError = DESIREDLINEFOLLOWNUMBER - rawDetectedLight; //lets say more white, this would be -
 
-            driveSteering = proportionalODSError * driveGain; //this would be -
+            driveSteering = proportionalODSError * driveGainODS; //this would be -
 
             leftPower = midPower;                           //This allows the left side of the robot to move at a constant speed
             rightPower = midPower + driveSteering;          //Right side is the one that gets altered with the driving
@@ -1468,7 +1468,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
 
         telemetry.clearData();      //clear all telemetry data before starting
 
-        driveGain = 0.05;           //gain for proportional control
+        driveGainODS = 0.005;           //gain for proportional control
 
         targetDistance = distance;              //drive straight given inches from parameter
 
@@ -1507,7 +1507,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
 
             proportionalODSError = DESIREDLINEFOLLOWNUMBER - rawDetectedLight; //lets say more white, this would be -
 
-            driveSteering = proportionalODSError * driveGain; //this would be -
+            driveSteering = proportionalODSError * driveGainODS; //this would be -
 
             leftPower = midPower + driveSteering;                           //This allows the right side of the robot to move at a constant speed
             rightPower = midPower;                                          //left side is the one that gets altered with the driving
@@ -1548,7 +1548,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
 
         telemetry.clearData();      //clear all telemetry data before starting
 
-        driveGain = 0.05;           //gain for proportional control
+        driveGainODS = 0.005;           //gain for proportional control
 
         targetDistance = distance;              //drive straight given inches from parameter
 
@@ -1629,7 +1629,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
 
         telemetry.clearData();      //clear all telemetry data before starting
 
-        driveGain = 0.05;           //gain for proportional control
+        driveGainODS = 0.005;           //gain for proportional control
 
         targetDistance = distance;              //drive straight given inches from parameter
 
@@ -1668,7 +1668,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode
 
             proportionalODSError = DESIREDLINEFOLLOWNUMBER - rawDetectedLight; //lets say more white, this would be -
 
-            driveSteering = proportionalODSError * driveGain; //this would be -
+            driveSteering = proportionalODSError * driveGainODS; //this would be -
 
             leftPower = midPower - driveSteering;                           //This allows the right side of the robot to move at a constant speed
             rightPower = midPower;                                          //left side is the one that gets altered with the driving
