@@ -30,7 +30,8 @@ import com.qualcomm.robotcore.hardware.ServoController;
  * Ax42 4-22=16 at 10:15 pm Steve -- code with updated timeouts and comments;  add window wiper before driving forwards
  * Ax43 4-22-16 at 12:32 pm Etienne -- updated code with updated servo initialize variables for blue
  * Ax50 4-22-16 at 3:34 pm Etienne & Bridget -- updated code and added the things we saw from testing: made new gain, clipped right instead of left and cleaned up sensor declaration and initialization
- * Ax51 2-22-16 at 4:13 pm Etienne & Bridget --updated code with changes to encoders in ACORN Right side Left Sensor and variables for ACORN Distance and score time
+ * Ax51 4-22-16 at 4:13 pm Etienne & Bridget -- updated code with changes to encoders in ACORN Right side Left Sensor and variables for ACORN Distance and score time
+ * Ax52 4-22-16 at 7:13 pm Steve & Bridget -- update code with spin motors; new comments; adjusted dates
  * <p>
  * <p>
  * <p>
@@ -270,7 +271,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
  */
 
 
-public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax51 extends LinearOpMode {
+public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax52 extends LinearOpMode {
 
     ServoController servoControllerPink, servoControllerWhite;
 
@@ -765,6 +766,9 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax51 extends LinearOpMode
         this.resetStartTime();
 
         do {
+
+            spin.setPower(1);  // Eject debris while driving, to clear path
+
             //takes the current heading of the gyro
             currentHeading = gyro.getIntegratedZValue();
 
@@ -828,6 +832,8 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax51 extends LinearOpMode
         this.resetStartTime();
 
         do {
+            spin.setPower(1);  // Eject debris while driving, to clear path
+
             //takes the current heading of the gyro
             currentHeading = gyro.getIntegratedZValue();
 
@@ -901,6 +907,8 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax51 extends LinearOpMode
 
         //loop until driving distance reached (or safety timeout)
         do {
+            spin.setPower(1);  // Eject debris while driving, to clear path
+
             //gets the encoder delta for the left and right encoders
             currentEncDeltaCountLeft = driveLeftBack.getCurrentPosition() - initialEncCountLeft;
             currentEncDeltaCountRight = driveRightBack.getCurrentPosition() - initialEncCountRight;
@@ -1075,6 +1083,7 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax51 extends LinearOpMode
 
 
         do {
+            spin.setPower(1);  // Eject debris while driving, to clear path
 
             //get and assign the raw infrared value the sensor detects
             rawDetectedLight = floorODS.getLightDetectedRaw();
@@ -1142,6 +1151,8 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax51 extends LinearOpMode
         this.resetStartTime();
 
         do {
+            spin.setPower(1);  // Eject debris while driving, to clear path
+
             //get and assign the raw infrared value the sensor detects
             rawDetectedLight = floorODS.getLightDetectedRaw();
 
@@ -1199,6 +1210,9 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax51 extends LinearOpMode
         lineDetected = false;
 
         do {
+
+            spin.setPower(1);  // Eject debris while driving, to clear path
+
             //get and assign the raw infrared value the sensor detects
             rawDetectedLight = floorODS.getLightDetectedRaw();
 
@@ -1260,6 +1274,8 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax51 extends LinearOpMode
         lineDetected = false;
 
         do {
+            spin.setPower(1);  // Eject debris while driving, to clear path
+
             //get and assign the raw infrared value the sensor detects
             rawDetectedLight = floorODS.getLightDetectedRaw();
 
@@ -1317,6 +1333,9 @@ public class Worlds_9804_BLUE_ClimbersFarStartUsingODS_Ax51 extends LinearOpMode
         this.resetStartTime();
 
         do {
+
+            spin.setPower(1);  // Eject debris while driving, to clear path
+
             //get and assign the raw infrared value the sensor detects
             rawDetectedLight = floorODS.getLightDetectedRaw();
 
