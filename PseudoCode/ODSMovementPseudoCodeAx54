@@ -1,0 +1,20 @@
+ * (0) Disable all servo controllers so that they are not draining energy while the robot is powered
+ * (1) Drive straight backwards from wall at a 0 degree angle. (When initializing the gyro, 0 degrees is set)
+ * (2) spin move clockwise 45º
+ * (3) drive straight backwards high speed for 72 inches
+ * (4.1) drive until red line is seen at medium-low speed
+ * (4.2) stop motors, set current vaue-10 to red threshold, drive 2 in
+ * (4.3) drive until white line is seen at medium-low speed
+ * (5) overshoot by 6.8 inches
+ * (6) spin move clockwise 45º (global position is now -90º)
+ * (7) enter loop for checking if we are next to white line; exit when time runs out or we are no longer next to line
+ * (7.1) drive forwards 4 inches (away from the beacon)
+ * (7.2) spin counter clockwise until line is seen or we reach a maximum angle
+ * (7.3) spin clockwise back to global heading of -90º
+ * ***NOW THE ROBOT IS SLIGHTLY BEYOND THE TIP OF THE WHITE LINE*** (facing the beacon)
+ * (8) drive straight backwards 4 inches
+ * (9) spin move counter clockwise until white line is detected, back to earlier position
+ * (10) ACORN proportional line follow for 15 inches
+ * (10.5) enable the servo controller that hosts the shelterDrop servo
+ * (11) score shelter drop
+ * (12) code complete!
