@@ -356,7 +356,7 @@ public class Worlds_9804_BLUE_FarFinish_RobotParallelToLine_Ax10 extends LinearO
             servoControllerPink.pwmDisable();
 
             //step 1
-            driveStraightBackwards(0, 48, 0.8); //24 inches because the robot is located on the second tile and needs a shorter distance to get the correct angle
+            driveStraightBackwards(0, 48, 0.8); // parrallel
 
             waitOneFullHardwareCycle();
 
