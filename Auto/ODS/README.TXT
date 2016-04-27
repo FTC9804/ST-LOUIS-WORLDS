@@ -3,6 +3,13 @@ CODE:
 # in progress
 & -> review
 && -> complete
+
+Values:
+1 36
+2 24 in.
+3 13.5
+4 48, 17, 48
+
 Blue
   Delay
     1 &
