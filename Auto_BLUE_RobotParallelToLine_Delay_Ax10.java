@@ -102,7 +102,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
  */
 
 
-public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
+public class Auto_BLUE_RobotParallelToLine_Delay_Ax10 extends LinearOpMode {
 
 
     /**
@@ -353,6 +353,13 @@ public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
             // de-energize the servos when stop button is pressed
             servoControllerWhite.pwmDisable();
             servoControllerPink.pwmDisable();
+
+            //step 0.5
+
+            this.resetStartTime();                  //WAIT FOR PARTNER TO DO AUTO
+            while (this.getRuntime() < 15){
+                waitOneFullHardwareCycle();
+            }
 
             //step 1
             driveStraightBackwards(0, 48, 0.8); //24 inches because the robot is located on the second tile and needs a shorter distance to get the correct angle

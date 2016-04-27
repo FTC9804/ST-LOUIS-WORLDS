@@ -102,7 +102,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
  */
 
 
-public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
+public class Auto_BLUE_RobotParallelToLine_MoveOut_Ax10 extends LinearOpMode {
 
 
     /**
@@ -505,6 +505,16 @@ public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
             // de-energize the servos
             servoControllerWhite.pwmDisable();
             servoControllerPink.pwmDisable();
+
+            //step 13
+
+            driveStraightForwards(-45, 60, 0.8);
+
+            waitOneFullHardwareCycle();
+
+            stopMotors();
+
+            waitOneFullHardwareCycle();
 
             telemetry.addData("CODE COMPLETE", telemetryVariable);
 

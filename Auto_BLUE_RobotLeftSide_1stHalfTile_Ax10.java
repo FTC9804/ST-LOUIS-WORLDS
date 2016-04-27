@@ -12,21 +12,21 @@ import com.qualcomm.robotcore.hardware.ServoController;
  * FTC Team 9804 Bomb Squad -- Autonomous
  * Made by the programmers of FTC Team 9804 Bomb Squad
 
- * Ax10 4-25-16 at 7:23 pm Steve -- Ax10 for start between teeth 6-10
+ * Ax00 4-25-16 at 6:45 pm Etienne -- made Ax00 for start with left side of robot anywhere within the first 1/2 tile
+ * Ax
 
 
  * ~~~~SETUP_(TEETH 1-5)~~~~
- * (1) Left side of the robot can be placed between teeth 6-10 from the mountain perpendicular to the wall
- * The robot must be facing backwards and have climbers located in the sheath.
- *
- *
+ * (1) Left side of the robot can be placed between first one half tile from the mountain perpendicular to the wall
+
+
  * ~~~~~~~~~MOVEMENT Ax41 (BLUE!!!)~~~~~~~~~
  * -All the steps correspond to actual steps in the op mode
  * -Continue using setup version Tx21
  * (0) Disable all servo controllers so that they are not draining energy while the robot is powered
- * (1) Drive straight backwards from wall at a 0 degree angle for 24 inches. (When initializing the gyro, 0 degrees is set)
+ * (1) Drive straight backwards from wall at a 0 degree angle. (When initializing the gyro, 0 degrees is set)
  * (2) spin move clockwise 45º
- * (3) drive straight backwards high speed for 45 inches
+ * (3) drive straight backwards high speed for 72 inches
  * (4) drive until white line is seen at medium-low speed
  * (5) overshoot by 6.8 inches
  * (6) spin move clockwise 45º (global position is now -90º)
@@ -102,7 +102,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
  */
 
 
-public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
+public class Auto_BLUE_RobotLeftSide_1stHalfTile_Ax10 extends LinearOpMode {
 
 
     /**
@@ -355,7 +355,7 @@ public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
             servoControllerPink.pwmDisable();
 
             //step 1
-            driveStraightBackwards(0, 48, 0.8); //24 inches because the robot is located on the second tile and needs a shorter distance to get the correct angle
+            driveStraightBackwards(0, 36, 0.8); //36 inches because it is the ROBOT_LEFT_SIDE_1ST_HALF_TILE
 
             waitOneFullHardwareCycle();
 
@@ -364,7 +364,7 @@ public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
             waitOneFullHardwareCycle();
 
             //step 2
-            spinMoveClockwise(-90);
+            spinMoveClockwise(-45);
 
             waitOneFullHardwareCycle();
 
@@ -373,25 +373,12 @@ public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
             waitOneFullHardwareCycle();
 
             //step 3
-            driveStraightBackwards(-90, 17, 0.9);
-
-            waitOneFullHardwareCycle();
-
-            stopMotors();
-
-            waitOneFullHardwareCycle();
-
-            //step 2
-            spinMoveClockwise(0);
-
-            waitOneFullHardwareCycle();
-
-            stopMotors();
+            driveStraightBackwards(-45, 25, 0.9);
 
             waitOneFullHardwareCycle();
 
             //step 4
-            driveStraightBackwardsUntilWhiteLineIsDetected(0, 0.6);
+            driveStraightBackwardsUntilWhiteLineIsDetected(-45, 0.6);
 
             waitOneFullHardwareCycle();
 
@@ -400,7 +387,7 @@ public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
             waitOneFullHardwareCycle();
 
             //step 5
-            driveStraightBackwards(0, 6.8, 0.65); //6.8 is the overshoot distance that ***TESTED***
+            driveStraightBackwards(-45, 6.8, 0.5); //6.8 is the overshoot distance that ***TESTED***
 
             waitOneFullHardwareCycle();
 
@@ -409,7 +396,7 @@ public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
             waitOneFullHardwareCycle();
 
             //step 6
-            spinMoveClockwise(-45);         //now robot is facing beacon with white line underneath
+            spinMoveClockwise(-90);         //now robot is facing beacon with white line underneath
 
             waitOneFullHardwareCycle();
 
@@ -426,7 +413,7 @@ public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
                 windowWiperActivate();
 
                 //sub-step 1
-                driveStraightForwards(-45, CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE, 0.5);
+                driveStraightForwards(-90, CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE, 0.5);
 
                 waitOneFullHardwareCycle();
 
@@ -446,7 +433,7 @@ public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
                 waitOneFullHardwareCycle();
 
                 //sub-step 3
-                spinMoveClockwise(-45);
+                spinMoveClockwise(-90);
 
                 waitOneFullHardwareCycle();
 
@@ -460,7 +447,7 @@ public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
 
             //step 8
 
-            driveStraightBackwards(-45, CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE, 0.5); //THE DISTANCE IS 1.5 GREATER BECAUSE OF BACKLASH
+            driveStraightBackwards(-90, CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE, 0.5); //THE DISTANCE IS 1.5 GREATER BECAUSE OF BACKLASH
 
             waitOneFullHardwareCycle();
 
@@ -856,7 +843,7 @@ public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
                 lineDetected = true;
             }
 
-            telemetry.addData("ods1 Blue rear left ", floorODS.getLightDetectedRaw());
+            telemetry.addData("ods1 Blue rear left ",  floorODS.getLightDetectedRaw());
 
             spin.setPower(1);  // Eject debris while driving, to clear path
 
@@ -1046,16 +1033,16 @@ public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
 
         //takes the initial position of the encoders to establish a starting point for the distance
         initialEncCountLeft = driveLeftFront.getCurrentPosition();      //here we are using the LEFT FRONT ENCODER because it is on an idle wheel and
-        //it also is closer to the ACORN side
-        //During testing we found that the treads had backlash and
-        //using an idle wheel was thought to fix it. Has not been tested.
+                                                                        //it also is closer to the ACORN side
+                                                                        //During testing we found that the treads had backlash and
+                                                                        //using an idle wheel was thought to fix it. Has not been tested.
 
 
         do {
             spin.setPower(1);  // Eject debris while driving, to clear path
 
             currentEncDeltaCountLeft = driveLeftFront.getCurrentPosition() - initialEncCountLeft;         //the current - initial will give the
-            // current distance of the encoders
+                                                                                                          // current distance of the encoders
 
             EncErrorLeft = targetEncoderCounts - Math.abs(currentEncDeltaCountLeft);                     //the error is the delta between the target counts and current counts
 

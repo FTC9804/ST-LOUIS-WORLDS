@@ -102,7 +102,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
  */
 
 
-public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
+public class Auto_BLUE_RobotLeftSide_2ndHalfTile_MoveOut_Ax10 extends LinearOpMode {
 
 
     /**
@@ -355,7 +355,7 @@ public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
             servoControllerPink.pwmDisable();
 
             //step 1
-            driveStraightBackwards(0, 48, 0.8); //24 inches because the robot is located on the second tile and needs a shorter distance to get the correct angle
+            driveStraightBackwards(0, 24, 0.8); //24 inches because the robot is located on the second tile and needs a shorter distance to get the correct angle
 
             waitOneFullHardwareCycle();
 
@@ -364,7 +364,7 @@ public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
             waitOneFullHardwareCycle();
 
             //step 2
-            spinMoveClockwise(-90);
+            spinMoveClockwise(-45);
 
             waitOneFullHardwareCycle();
 
@@ -373,25 +373,12 @@ public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
             waitOneFullHardwareCycle();
 
             //step 3
-            driveStraightBackwards(-90, 17, 0.9);
-
-            waitOneFullHardwareCycle();
-
-            stopMotors();
-
-            waitOneFullHardwareCycle();
-
-            //step 2
-            spinMoveClockwise(0);
-
-            waitOneFullHardwareCycle();
-
-            stopMotors();
+            driveStraightBackwards(-45, 45, 0.9);
 
             waitOneFullHardwareCycle();
 
             //step 4
-            driveStraightBackwardsUntilWhiteLineIsDetected(0, 0.6);
+            driveStraightBackwardsUntilWhiteLineIsDetected(-45, 0.6);
 
             waitOneFullHardwareCycle();
 
@@ -400,7 +387,7 @@ public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
             waitOneFullHardwareCycle();
 
             //step 5
-            driveStraightBackwards(0, 6.8, 0.65); //6.8 is the overshoot distance that ***TESTED***
+            driveStraightBackwards(-45, 6.8, 0.65); //6.8 is the overshoot distance that ***TESTED***
 
             waitOneFullHardwareCycle();
 
@@ -409,7 +396,7 @@ public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
             waitOneFullHardwareCycle();
 
             //step 6
-            spinMoveClockwise(-45);         //now robot is facing beacon with white line underneath
+            spinMoveClockwise(-90);         //now robot is facing beacon with white line underneath
 
             waitOneFullHardwareCycle();
 
@@ -426,7 +413,7 @@ public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
                 windowWiperActivate();
 
                 //sub-step 1
-                driveStraightForwards(-45, CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE, 0.5);
+                driveStraightForwards(-90, CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE, 0.5);
 
                 waitOneFullHardwareCycle();
 
@@ -446,7 +433,7 @@ public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
                 waitOneFullHardwareCycle();
 
                 //sub-step 3
-                spinMoveClockwise(-45);
+                spinMoveClockwise(-90);
 
                 waitOneFullHardwareCycle();
 
@@ -460,7 +447,7 @@ public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
 
             //step 8
 
-            driveStraightBackwards(-45, CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE, 0.5); //THE DISTANCE IS 1.5 GREATER BECAUSE OF BACKLASH
+            driveStraightBackwards(-90, CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE, 0.5); //THE DISTANCE IS 1.5 GREATER BECAUSE OF BACKLASH
 
             waitOneFullHardwareCycle();
 
@@ -505,6 +492,16 @@ public class Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
             // de-energize the servos
             servoControllerWhite.pwmDisable();
             servoControllerPink.pwmDisable();
+
+            //step 13
+
+            driveStraightForwards(-90, 60, 0.8);
+
+            waitOneFullHardwareCycle();
+
+            stopMotors();
+
+            waitOneFullHardwareCycle();
 
             telemetry.addData("CODE COMPLETE", telemetryVariable);
 
