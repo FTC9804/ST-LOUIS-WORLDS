@@ -408,7 +408,7 @@ public class Worlds_9804_RED_DELAY_RobotParallelToLine_Ax12 extends LinearOpMode
             waitOneFullHardwareCycle();
 
             //step 4
-            driveStraightBackwardsUntilRedLineIsDetected(45, 0.6);
+            driveStraightBackwardsUntilRedLineIsDetected(0, 0.6);
 
             waitOneFullHardwareCycle();
 
@@ -420,9 +420,7 @@ public class Worlds_9804_RED_DELAY_RobotParallelToLine_Ax12 extends LinearOpMode
 
             ODS_THRESHOLD = (int)(1.18 * RED_THRESHOLD);
 
-            driveStraightBackwards(45, 2, 0.6); // two is not tested
-
-            driveStraightBackwardsUntilWhiteLineIsDetected(45, 0.6);
+            driveStraightBackwardsUntilWhiteLineIsDetected(0, 0.6);
 
             waitOneFullHardwareCycle();
 
@@ -431,7 +429,7 @@ public class Worlds_9804_RED_DELAY_RobotParallelToLine_Ax12 extends LinearOpMode
             waitOneFullHardwareCycle();
 
             //step 5
-            driveStraightBackwards(45, 6.8, 0.5); //6.8 is the overshoot distance that ***TESTED***
+            driveStraightBackwards(0, 6.8, 0.5); //6.8 is the overshoot distance that ***TESTED***
 
             waitOneFullHardwareCycle();
 
@@ -440,7 +438,7 @@ public class Worlds_9804_RED_DELAY_RobotParallelToLine_Ax12 extends LinearOpMode
             waitOneFullHardwareCycle();
 
             //step 6
-            spinMoveCounterClockwise(90);         //now robot is facing beacon with white line underneath
+            spinMoveCounterClockwise(45);         //now robot is facing beacon with white line underneath
 
             waitOneFullHardwareCycle();
 
@@ -457,7 +455,7 @@ public class Worlds_9804_RED_DELAY_RobotParallelToLine_Ax12 extends LinearOpMode
                 windowWiperActivate();
 
                 //sub-step 1
-                driveStraightForwards(90, CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE, 0.5);
+                driveStraightForwards(45, CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE, 0.5);
 
                 waitOneFullHardwareCycle();
 
@@ -477,7 +475,7 @@ public class Worlds_9804_RED_DELAY_RobotParallelToLine_Ax12 extends LinearOpMode
                 waitOneFullHardwareCycle();
 
                 //sub-step 3
-                spinMoveCounterClockwise(90);
+                spinMoveCounterClockwise(45);
 
                 waitOneFullHardwareCycle();
 
@@ -491,7 +489,7 @@ public class Worlds_9804_RED_DELAY_RobotParallelToLine_Ax12 extends LinearOpMode
 
             //step 8
 
-            driveStraightBackwards(90, CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE, 0.5); //THE DISTANCE IS 1.5 GREATER BECAUSE OF BACKLASH
+            driveStraightBackwards(45, CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE, 0.5); //THE DISTANCE IS 1.5 GREATER BECAUSE OF BACKLASH
 
             waitOneFullHardwareCycle();
 
