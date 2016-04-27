@@ -363,7 +363,7 @@ public class Worlds_9804_RED_DELAY_RobotRightSide_1stHalfTile_Ax11 extends Linea
             servoControllerPink.pwmDisable();
 
             //step 1
-            driveStraightBackwards(0, 24, 0.8);
+            driveStraightBackwards(0, 36, 0.8);
 
             waitOneFullHardwareCycle();
 
