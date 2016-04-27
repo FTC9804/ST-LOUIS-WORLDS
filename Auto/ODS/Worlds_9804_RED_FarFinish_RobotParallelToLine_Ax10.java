@@ -11,29 +11,28 @@ import com.qualcomm.robotcore.hardware.ServoController;
 /*
  * FTC Team 9804 Bomb Squad -- Autonomous
  * Made by the programmers of FTC Team 9804 Bomb Squad
-
- * Ax10 4-25-16 at 7:23 pm Steve -- Ax10 for start between teeth 6-10
-
-
- * ~~~~SETUP_(TEETH 1-5)~~~~
- * (1) Left side of the robot can be placed between teeth 6-10 from the mountain perpendicular to the wall
- * The robot must be facing backwards and have climbers located in the sheath.
+ * Ax10 4-25-16 at 7:52 pm Steve -- introduce ax10 with new movement for red
+ * Ax11 4-27-16 at 12:47 pm Steve -- code updated with competition updates
  *
  *
- * ~~~~~~~~~MOVEMENT Ax41 (BLUE!!!)~~~~~~~~~
+ * ~~~~SETUP_(VERSION Tx21)~~~~
+ * (1) Right side of the robot is in the middle of second full tile from mountain
+ * ~~~~~~~~~MOVEMENT Ax41 (RED!!!)~~~~~~~~~
  * -All the steps correspond to actual steps in the op mode
  * -Continue using setup version Tx21
  * (0) Disable all servo controllers so that they are not draining energy while the robot is powered
- * (1) Drive straight backwards from wall at a 0 degree angle for 24 inches. (When initializing the gyro, 0 degrees is set)
- * (2) spin move clockwise 45º
+ * (1) Drive straight backwards from wall at a 0 degree angle. (When initializing the gyro, 0 degrees is set)
+ * (2) spin move counter clockwise 45º
  * (3) drive straight backwards high speed for 45 inches
- * (4) drive until white line is seen at medium-low speed
+ * (4.1) drive until red line is seen at medium-low speed
+ * (4.2) stop motors, set current value to red threshold
+ * (4.3) drive until white line is seen at medium-low speed
  * (5) overshoot by 6.8 inches
- * (6) spin move clockwise 45º (global position is now -90º)
+ * (6) spin move counter clockwise 45º (global position is now 90º)
  * (7) enter loop for checking if we are next to white line; exit when time runs out or we are no longer next to line
  * (7.1) drive forwards 4 inches (away from the beacon)
- * (7.2) spin counter clockwise until line is seen or we reach a maximum angle
- * (7.3) spin clockwise back to global heading of -90º
+ * (7.2) spin clockwise until line is seen or we reach a maximum angle
+ * (7.3) spin clockwise back to global heading of 90º
  * ***NOW THE ROBOT IS SLIGHTLY BEYOND THE TIP OF THE WHITE LINE*** (facing the beacon)
  * (8) drive straight backwards 4 inches
  * (9) spin move counter clockwise until white line is detected, back to earlier position
@@ -56,7 +55,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
  * Heading = ABSOLUTE heading of the robot on the field
  * Distance = INCREMENTAL distance of the robot on the field
  *
- * referencing floorODS in this program call values from ods1, which is the ODS on the left side of the robot, used when blue
+ * referencing floorODS in this program call values from ods2, which is the ODS on the left side of the robot, used when blue
  *
  * ACORN = adjusted center of rotation navigation; we use this for our proportional line follow because our ODS sensors are off centered
  *
@@ -102,7 +101,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
  */
 
 
-public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
+public class Worlds_9804_RED_FarFinish_RobotParallelToLine_Ax10 extends LinearOpMode {
 
 
     /**
@@ -176,7 +175,7 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
     //from us. With the spinner that collects blocks in the front and the shields in the front, there is no
     //worry for the front. On the back, we rely on the window wiper which wipes all the blocks and balls away
     //from our path using a standard servo
-    Servo windowWiperL;                 //Standard Servo
+    Servo windowWiperL;                    //Standard Servo
     Servo windowWiperR;
 
     /**
@@ -227,19 +226,19 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
     int telemetryVariable;                      // a NULL telemetry variable designed to diplay text only
     int initialEncCountLeft;                    //initial encoder counts of the left encoder
     int initialEncCountRight;                   //initial encoder counts of the right encoder
-    double driveGain;
 
 
     //ODS VARIABLES
-    int rawDetectedLight;                       //ODS Light detection value
-    static int ODS_THRESHOLD = 570;             //ODS Light threshold ****TESTED*****
-    boolean lineDetected = false;               //boolean to leave do-while loop in methods
-    static int DESIREDLINEFOLLOWNUMBER = 350;   //the number for perfect line follow along the edge of the line, NEEDS TO BE TESTED
+    int rawDetectedLight;                  //ODS Light detection value
+    int ODS_THRESHOLD = 570;      //ODS Light threshold ****TESTED*****
+    int RED_THRESHOLD = 500;
+    boolean lineDetected = false;       //boolean to leave do-while loop in methods
+    static int DESIREDLINEFOLLOWNUMBER = 350; //the number for perfect line follow along the edge of the line, NEEDS TO BE TESTED
     double proportionalODSError;
 
     //servo variables
-    double grabLeftUp = 0;                      //0 is max CCW (UP on left side)
-    double grabRightUp = 1.0;                   //1 is max CW (UP on right side)
+    double grabLeftUp = 0;                  //0 is max CCW (UP on left side)
+    double grabRightUp = 1.0;               //1 is max CW (UP on right side)
     double sweepOpenedL = 0.75;
     double sweepClosedL = 0.1;
     double sweepPositionL = sweepClosedL;
@@ -258,6 +257,7 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
     double ziplineBarInitialize = 0;
     double ziplineBarPosition = ziplineBarInitialize;
     double shelterDropTime = 3;
+    double driveGain;
 
     //USE CONFIGURATION FILE 'JABBED' ON BOTH MAIN AND B PHONES
 
@@ -308,7 +308,7 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
         // hardware assignment of two sensors
 
         gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");
-        floorODS = hardwareMap.opticalDistanceSensor.get("ods1");
+        floorODS = hardwareMap.opticalDistanceSensor.get("ods2");
 
         // servo controllers; can disable and re-enable entire unit
         servoControllerWhite = hardwareMap.servoController.get("servoControllerWhite"); // VSI1
@@ -328,7 +328,7 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
 
         ModernRoboticsI2cGyro gyro = (ModernRoboticsI2cGyro) hardwareMap.gyroSensor.get("gyro");    //initialize gyro to be used in code
 
-        OpticalDistanceSensor floorODS = hardwareMap.opticalDistanceSensor.get("ods1");
+        OpticalDistanceSensor floorODS = hardwareMap.opticalDistanceSensor.get("ods2");
 
         hardwareMap.logDevices();
 
@@ -356,7 +356,7 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
             servoControllerPink.pwmDisable();
 
             //step 1
-            driveStraightBackwards(0, 48, 0.8); //24 inches because the robot is located on the second tile and needs a shorter distance to get the correct angle
+            driveStraightBackwards(0, 48, 0.8);
 
             waitOneFullHardwareCycle();
 
@@ -365,7 +365,7 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
             waitOneFullHardwareCycle();
 
             //step 2
-            spinMoveClockwise(-90);
+            spinMoveCounterClockwise(90);
 
             waitOneFullHardwareCycle();
 
@@ -374,7 +374,7 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
             waitOneFullHardwareCycle();
 
             //step 2.5
-            driveStraightBackwards(-90, 17, 0.9);
+            driveStraightBackwards(90, 17, 0.9);
 
             waitOneFullHardwareCycle();
 
@@ -383,7 +383,7 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
             waitOneFullHardwareCycle();
 
             //step 3
-            spinMoveCounterClockwise(0);
+            spinMoveClockwise(0);
 
             waitOneFullHardwareCycle();
 
@@ -392,7 +392,7 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
             waitOneFullHardwareCycle();
 
             //step 3.5
-            driveStraightBackwards(0, 48, 0.8); //24 inches because the robot is located on the second tile and needs a shorter distance to get the correct angle
+            driveStraightBackwards(0, 48, 0.9);
 
             waitOneFullHardwareCycle();
 
@@ -401,7 +401,21 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
             waitOneFullHardwareCycle();
 
             //step 4
-            driveStraightBackwardsUntilWhiteLineIsDetected(0, 0.6);
+            driveStraightBackwardsUntilRedLineIsDetected(45, 0.6);
+
+            waitOneFullHardwareCycle();
+
+            stopMotors();
+
+            waitOneFullHardwareCycle();
+
+            RED_THRESHOLD = floorODS.getLightDetectedRaw();
+
+            ODS_THRESHOLD = (int)(1.18 * RED_THRESHOLD);
+
+            driveStraightBackwards(45, 2, 0.6); // two is not tested
+
+            driveStraightBackwardsUntilWhiteLineIsDetected(45, 0.6);
 
             waitOneFullHardwareCycle();
 
@@ -410,7 +424,7 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
             waitOneFullHardwareCycle();
 
             //step 5
-            driveStraightBackwards(0, 6.8, 0.65); //6.8 is the overshoot distance that ***TESTED***
+            driveStraightBackwards(45, 6.8, 0.5); //6.8 is the overshoot distance that ***TESTED***
 
             waitOneFullHardwareCycle();
 
@@ -419,7 +433,7 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
             waitOneFullHardwareCycle();
 
             //step 6
-            spinMoveClockwise(-45);         //now robot is facing beacon with white line underneath
+            spinMoveCounterClockwise(90);         //now robot is facing beacon with white line underneath
 
             waitOneFullHardwareCycle();
 
@@ -436,7 +450,7 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
                 windowWiperActivate();
 
                 //sub-step 1
-                driveStraightForwards(-45, CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE, 0.5);
+                driveStraightForwards(90, CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE, 0.5);
 
                 waitOneFullHardwareCycle();
 
@@ -447,7 +461,7 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
                 //sub-step 2
                 //this function will keep turning counter clockwise until it does not see white.
                 //Then it will set stillAtWhiteLine = false;
-                spinMoveCounterClockwiseToCheckForWhiteLine(CHECK_TO_WHITE_LINE_DELTA);
+                spinMoveClockwiseToCheckForWhiteLine(CHECK_TO_WHITE_LINE_DELTA);
 
                 waitOneFullHardwareCycle();
 
@@ -456,7 +470,7 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
                 waitOneFullHardwareCycle();
 
                 //sub-step 3
-                spinMoveClockwise(-45);
+                spinMoveCounterClockwise(90);
 
                 waitOneFullHardwareCycle();
 
@@ -470,7 +484,7 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
 
             //step 8
 
-            driveStraightBackwards(-45, CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE, 0.5); //THE DISTANCE IS 1.5 GREATER BECAUSE OF BACKLASH
+            driveStraightBackwards(90, CHECK_FOR_WHITE_LINE_FORWARDS_DISTANCE, 0.5); //THE DISTANCE IS 1.5 GREATER BECAUSE OF BACKLASH
 
             waitOneFullHardwareCycle();
 
@@ -479,7 +493,7 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
             waitOneFullHardwareCycle();
 
             //step 9
-            spinMoveCounterClockwiseUntilWhiteLineIsDetected();
+            spinMoveClockwiseUntilWhiteLineIsDetected();
 
             waitOneFullHardwareCycle();
 
@@ -488,7 +502,7 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
             waitOneFullHardwareCycle();
 
             //step 10
-            proportionalLineFollowForDistanceWithACORNRightSideOfLineLeftSideSensor(ACORN_LINE_FOLLOW_DISTANCE, 0.5); //distance of 20 needs to be checked
+            proportionalLineFollowForDistanceWithACORNLeftSideOfLineRightSideSensor(ACORN_LINE_FOLLOW_DISTANCE, 0.5); //distance of 20 needs to be checked
 
             waitOneFullHardwareCycle();
 
@@ -511,6 +525,10 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
             waitOneFullHardwareCycle();
 
             //step 12
+
+            //far finish
+            currentHeading = gyro.getIntegratedZValue();
+            driveStraightBackwards(currentHeading, 60, 0.8);
 
             // de-energize the servos
             servoControllerWhite.pwmDisable();
@@ -568,29 +586,72 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
 
     }
 
-    void windowWiperActivate() {
+
+    //NON ODS DRIVING METHODS
+
+    void spinMoveCounterClockwise(int heading) {
         /*
          * How to use this method:
-         *  Call on this method when you wish to run the window wiper servo to clear debris from the front of the robot
+         *  In the op mode, input the ABSOLUTE heading of the desired position for the robot on the field.
+         *  After the code is finished, run the stopMotors method to fully stop all drive and spin motors
          */
-        //CLEAR DEBRIS WITH WINDOW WIPER SERVO
-        windowWiperL.setPosition(sweepOpenedL);
-        windowWiperR.setPosition(sweepOpenedR);
+
+        //SPIN MOVE
+
+        driveGain = 0.05;       //OK for spin move
+        targetHeading = heading;    //CCW (using signed heading) (positive value CCW)
+
         this.resetStartTime();
-        while (this.getRuntime() < 1 && this.opModeIsActive()) { //give a short period of time for the hardware to execute the command
-            stopMotors();
-        }
-        windowWiperL.setPosition(sweepClosedL);
-        windowWiperR.setPosition(sweepClosedR);
-        this.resetStartTime();
-        while (this.getRuntime() < 0.5 && this.opModeIsActive()) { //give a short period of time for the hardware to execute the command
-            stopMotors();
-        }
+
+        do {
+            //takes the current heading of the gyro
+            currentHeading = gyro.getIntegratedZValue();
+
+            //telemetry to print the current signed heading
+            telemetry.addData("current signed heading: ", currentHeading);
+
+            //takes the heading error for the value of our gyro
+            headingError = targetHeading - currentHeading;//for CCW spin from 0 to +º, error always positive
+
+            //drive steering for proportional control
+            driveSteering = headingError * driveGain;     //positive value for CCW
+
+            //for CCW spin, left tread runs backwards
+            leftPower = -driveSteering;
+            if (leftPower < -1) {
+                leftPower = -1;
+            }
+            if (leftPower > -0.6) {           //avoid zero closing power at low error
+                leftPower = -0.6;            //anything less than 0.6 stalled near target heading
+            }
+
+
+            //for CCW spin, right tread runs forwards
+            rightPower = driveSteering;
+            if (rightPower > 1) {
+                rightPower = 1;
+            }
+            if (rightPower < 0.6) {
+                rightPower = 0.6;
+            }
+
+            //when spinning CCW, left front is trailing, left back is leading
+            //right front is leading, right back is trailing
+            //trailing gets calculated full power, leading gets 95% of calculated full  power
+
+            driveLeftFront.setPower(leftPower);
+            driveLeftBack.setPower(0.95 * leftPower);
+            driveRightFront.setPower(0.95 * rightPower);
+            driveRightBack.setPower(rightPower);
+
+        } while (currentHeading < targetHeading
+                && this.getRuntime() < 6 && this.opModeIsActive());
+        //spin from 0 to + number, so loop while 'less than' the target heading
+
+        telemetry.addData("SPIN CCW DONE", telemetryVariable);
 
 
     }
-
-    //NON ODS DRIVING METHODS
 
     void spinMoveClockwise(int heading) {
        /*
@@ -660,7 +721,7 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
          * How to use this method:
          *  Programmer inputs heading, distance, and midpower
          *      Heading = ABSOLUTE heading of the robot on the field
-         *      Distance = INCREMENTAL distance that you wish to have the robot run this time
+         *       Distance = INCREMENTAL distance that you wish to have the robot run this time
          *      MidPower = the desired midpower that you wish to have the robot run with
          */
         //clear the previous telemetry output on the phones
@@ -830,70 +891,6 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
 
     }
 
-    void spinMoveCounterClockwise(int heading) {
-        /*
-         * How to use this method:
-         *  In the op mode, input the ABSOLUTE heading of the desired position for the robot on the field.
-         *  After the code is finished, run the stopMotors method to fully stop all drive and spin motors
-         */
-
-        //SPIN MOVE
-
-        driveGain = 0.05;       //OK for spin move
-        targetHeading = heading;    //CCW (using signed heading) (positive value CCW)
-
-        this.resetStartTime();
-
-        do {
-            //takes the current heading of the gyro
-            currentHeading = gyro.getIntegratedZValue();
-
-            //telemetry to print the current signed heading
-            telemetry.addData("current signed heading: ", currentHeading);
-
-            //takes the heading error for the value of our gyro
-            headingError = targetHeading - currentHeading;//for CCW spin from 0 to +º, error always positive
-
-            //drive steering for proportional control
-            driveSteering = headingError * driveGain;     //positive value for CCW
-
-            //for CCW spin, left tread runs backwards
-            leftPower = -driveSteering;
-            if (leftPower < -1) {
-                leftPower = -1;
-            }
-            if (leftPower > -0.6) {           //avoid zero closing power at low error
-                leftPower = -0.6;            //anything less than 0.6 stalled near target heading
-            }
-
-
-            //for CCW spin, right tread runs forwards
-            rightPower = driveSteering;
-            if (rightPower > 1) {
-                rightPower = 1;
-            }
-            if (rightPower < 0.6) {
-                rightPower = 0.6;
-            }
-
-            //when spinning CCW, left front is trailing, left back is leading
-            //right front is leading, right back is trailing
-            //trailing gets calculated full power, leading gets 95% of calculated full  power
-
-            driveLeftFront.setPower(leftPower);
-            driveLeftBack.setPower(0.95 * leftPower);
-            driveRightFront.setPower(0.95 * rightPower);
-            driveRightBack.setPower(rightPower);
-
-        } while (currentHeading < targetHeading
-                && this.getRuntime() < 6 && this.opModeIsActive());
-        //spin from 0 to + number, so loop while 'less than' the target heading
-
-        telemetry.addData("SPIN CCW DONE", telemetryVariable);
-
-
-    }
-
     //ODS DRIVING METHODS
 
     void driveStraightBackwardsUntilWhiteLineIsDetected(int heading, double midPower) {
@@ -930,7 +927,7 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
                 lineDetected = true;
             }
 
-            telemetry.addData("ods1 Blue rear left ", floorODS.getLightDetectedRaw());
+            telemetry.addData("ods2 Red rear left ", floorODS.getLightDetectedRaw());
 
             spin.setPower(1);  // Eject debris while driving, to clear path
 
@@ -1156,6 +1153,464 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
             }
             if (rightPower < 0.2) {
                 rightPower = 0.2;
+            }
+            //when driving backwards, reverse leading and trailing
+            //left front is now trailing, left back is now leading
+            //trailing gets full power
+            driveLeftFront.setPower(-leftPower);
+            driveLeftBack.setPower(-.95 * leftPower);       //creates belt tension between the drive pulleys
+            driveRightFront.setPower(-rightPower);
+            driveRightBack.setPower(-.95 * rightPower);
+
+
+        }
+        while (EncErrorLeft > 0                   //the error is slowly decreasing, so run while greater than 0
+                && this.getRuntime() < 10 && this.opModeIsActive());         //safety timeout of 17 seconds
+
+
+        telemetry.addData("DRIVE STRAIGHT PROPORTIONAL BACKWARDS DONE", telemetryVariable);
+
+    }
+
+    void driveStraightBackwardsUntilRedLineIsDetected(int heading, double midPower) {
+                /*
+         * Purpose of this method:
+         *  drive backwards with spinners running until the robot senses a red line
+         *
+         * How to use this method:
+         *  Programmer inputs heading and the midpower for driving
+         *       Heading = ABSOLUTE heading of the robot on the field
+         *       MidPower = the desired midpower that you wish to have the robot run with
+         *
+         */
+
+        telemetry.clearData();      //clear all telemetry data before starting
+
+        driveGainODS = 0.005;           //gain for proportional control
+
+        targetHeading = heading;                //drive straight ahead at the initial/default heading
+
+
+        //resets start time before starting the drive
+        this.resetStartTime();
+
+
+        do {
+            spin.setPower(1);  // Eject debris while driving, to clear path
+
+            //get and assign the raw infrared value the sensor detects
+            rawDetectedLight = floorODS.getLightDetectedRaw();
+
+            if (rawDetectedLight > RED_THRESHOLD) {
+                lineDetected = true;
+            }
+
+            telemetry.addData("ods2 Red rear left ", floorODS.getLightDetectedRaw());
+
+            spin.setPower(1);  // Eject debris while driving, to clear path
+
+            // get the Z-axis heading info.
+            //this is a signed heading not a basic heading
+            currentHeading = gyro.getIntegratedZValue();
+
+            headingError = targetHeading - currentHeading;  //find the error between the headings
+
+            driveSteering = headingError * driveGainODS;       //create the proportion for the steering
+
+            leftPower = midPower + driveSteering;           //adds the drive steering to midpower because we are driving backwards
+            if (leftPower > 1.0) {                            //cuts ourselves off at 1, the maximum motor power
+                leftPower = 1.0;
+            }
+            if (leftPower < 0.2) {
+                leftPower = 0.2;
+            }
+            rightPower = midPower - driveSteering;          //subtraction because we are driving backwards
+            if (rightPower > 1.0) {
+                rightPower = 1.0;
+            }
+            if (rightPower < 0.2) {
+                rightPower = 0.2;
+            }
+            //when driving backwards, reverse leading and trailing
+            //left front is now trailing, left back is now leading
+            //trailing gets full power
+            driveLeftFront.setPower(-leftPower);
+            driveLeftBack.setPower(-.95 * leftPower);       //creates belt tension between the drive pulleys
+            driveRightFront.setPower(-rightPower);
+            driveRightBack.setPower(-.95 * rightPower);
+
+
+        }
+        while (!lineDetected       //run while the line is not detected
+                && this.getRuntime() < 12 && this.opModeIsActive());         //safety timeout of 12 seconds
+
+        lineDetected = false; //reset the variable to be used again
+
+        telemetry.addData("DRIVE STRAIGHT BACKWARDS TO LINE DONE", telemetryVariable);
+    }
+
+    void windowWiperActivate() {
+        /*
+         * How to use this method:
+         *  Call on this method when you wish to run the window wiper servo to clear debris from the front of the robot
+         */
+        //CLEAR DEBRIS WITH WINDOW WIPER SERVO
+        windowWiperL.setPosition(sweepOpenedL);
+        windowWiperR.setPosition(sweepOpenedR);
+        this.resetStartTime();
+        while (this.getRuntime() < 1 && this.opModeIsActive()) { //give a short period of time for the hardware to execute the command
+            stopMotors();
+        }
+        windowWiperL.setPosition(sweepClosedL);
+        windowWiperR.setPosition(sweepClosedR);
+        this.resetStartTime();
+        while (this.getRuntime() < 0.5 && this.opModeIsActive()) { //give a short period of time for the hardware to execute the command
+            stopMotors();
+        }
+
+
+    }
+
+    void spinMoveClockwiseToCheckForWhiteLine(double checkRotationDegreeDelta) {
+
+        /*
+         * How to use this method:
+         *  Run the code and watch the robot spin clockwise for a predetermined number of degrees unless it sees white and then rotate to its initial position
+         *  If the robot sees white, the function will make "stillAtWhiteLine" true.
+         *  Programmer inputs the degree difference the programmer wants the robot to rotate
+         */
+
+        //SPIN MOVE
+
+        driveGainODS = 0.005;       //OK for spin move
+
+        this.resetStartTime();
+
+        lineDetected = false;
+
+        do {
+            spin.setPower(1);  // Eject debris while driving, to clear path
+
+            //get and assign the raw infrared value the sensor detects
+            rawDetectedLight = floorODS.getLightDetectedRaw();
+
+            if (rawDetectedLight > ODS_THRESHOLD) {
+                lineDetected = true;
+            }
+
+            //takes the current heading of the gyro
+            currentHeading = gyro.getIntegratedZValue();
+
+            //telemetry to print the current signed heading
+            telemetry.addData("current signed heading: ", currentHeading);
+
+            //telemetry to print the current raw light detection values
+            telemetry.addData("current ODS raw light value: ", rawDetectedLight);
+
+            //for CW spin, left tread runs backwards
+            leftPower = .7;
+
+            //for CW spin, right tread runs forwards
+            rightPower = -.7;
+
+
+            //when spinning CCW, left front is trailing, left back is leading
+            //right front is leading, right back is trailing
+            //trailing gets calculated full power, leading gets 95% of calculated full  power
+
+            driveLeftFront.setPower(0.95 * leftPower);
+            driveLeftBack.setPower(leftPower);
+            driveRightFront.setPower(rightPower);
+            driveRightBack.setPower(0.95 * rightPower);
+
+        } while (
+                this.getRuntime() < 6 && this.opModeIsActive() && currentHeading < (90 - checkRotationDegreeDelta) && !lineDetected);
+
+        stillAtWhiteLine = lineDetected;
+
+        telemetry.addData("FUNCTION DONE. Line Detected: ", lineDetected);
+
+        lineDetected = false;
+
+    }
+
+    void spinMoveClockwiseUntilWhiteLineIsDetected() {
+
+        /*
+         * How to use this method:
+         *  Run the code and watch the robot spin to the line
+         */
+
+        //SPIN MOVE
+
+        driveGainODS = 0.005;       //OK for spin move
+
+        this.resetStartTime();
+
+        do {
+
+            spin.setPower(1);  // Eject debris while driving, to clear path
+
+            //get and assign the raw infrared value the sensor detects
+            rawDetectedLight = floorODS.getLightDetectedRaw();
+
+            if (rawDetectedLight > ODS_THRESHOLD) {
+                lineDetected = true;
+            }
+
+            //takes the current heading of the gyro
+            currentHeading = gyro.getIntegratedZValue();
+
+            //telemetry to print the current signed heading
+            telemetry.addData("current signed heading: ", currentHeading);
+
+            //for CW spin, left tread runs forwards
+            leftPower = .7;
+
+            //for CW spin, right tread runs backwards
+            rightPower = -.7;
+
+
+            //when spinning CW, left front is leading, left back is trailing
+            //right front is trailing, right back is leading
+            //trailing gets calculated full power, leading gets 95% of calculated full  power
+
+            driveLeftFront.setPower(0.95 * leftPower);
+            driveLeftBack.setPower(leftPower);
+            driveRightFront.setPower(rightPower);
+            driveRightBack.setPower(0.95 * rightPower);
+
+        } while (!lineDetected       //run while the line is not detected
+                && this.getRuntime() < 6 && this.opModeIsActive());
+
+        lineDetected = false;
+
+        telemetry.addData("SPIN CW TO LINE DONE", telemetryVariable);
+
+
+    }
+
+    void proportionalLineFollowForDistanceWithACORNLeftSideOfLineLeftSideSensor(double distance, double midPower) {
+        /*
+         * How to use this method:
+         *  Programmer inputs distance and midpower
+         *      Distance = INCREMENTAL distance that you wish to have the robot run this time
+         *      MidPower = the desired midpower that you wish to have the robot run with
+         * This follows the line with the sensor on the right side of the left side of the robot
+         *
+         * Drive backwards a desired distance while following the left side of the white line
+         */
+
+        telemetry.clearData();      //clear all telemetry data before starting
+
+        driveGainODS = 0.005;           //gain for proportional control
+
+        targetDistance = distance;              //drive straight given inches from parameter
+
+        //math for target encoder counts to travel
+        rotations = targetDistance / circumference;
+        targetEncoderCounts = (int) (encoderCountsPerRotation * rotations); //casts the target encoder counts as an integer
+
+        //resets start time before starting the drive
+        this.resetStartTime();
+
+        //takes the initial position of the encoders to establish a starting point for the distance
+        initialEncCountLeft = driveLeftBack.getCurrentPosition();
+        initialEncCountRight = driveRightBack.getCurrentPosition();
+
+
+        do {
+            spin.setPower(1);  // Eject debris while driving, to clear path
+
+            currentEncDeltaCountLeft = driveLeftBack.getCurrentPosition() - initialEncCountLeft;         //the current - initial will give the
+            currentEncDeltaCountRight = driveRightBack.getCurrentPosition() - initialEncCountRight;      //current distance of the encoders
+
+
+            EncErrorLeft = targetEncoderCounts - Math.abs(currentEncDeltaCountLeft);                     //the error is the delta between the target counts and current counts
+
+
+            //telemetry for encoder information
+            telemetry.addData("EncErrorLeft = ", EncErrorLeft);
+            telemetry.addData("Left Encoder: ", currentEncDeltaCountLeft);
+
+            //telemetry for the distance travelled (IN INCHES)
+            currentDistance = (currentEncDeltaCountLeft * circumference) / encoderCountsPerRotation;
+            telemetry.addData("Calculated current distance: ", currentDistance);
+
+
+            rawDetectedLight = floorODS.getLightDetectedRaw();
+
+            proportionalODSError = DESIREDLINEFOLLOWNUMBER - rawDetectedLight; //lets say more white, this would be -
+
+            driveSteering = proportionalODSError * driveGainODS; //this would be -
+
+            leftPower = midPower;                           //This allows the left side of the robot to move at a constant speed
+            rightPower = midPower + driveSteering;          //Right side is the one that gets altered with the driving
+            if (rightPower > 1.0) {                         //Addition because need to decrease power when more white is seen
+                rightPower = 1.0;
+            }
+            if (rightPower < 0.2) {
+                rightPower = 0.2;
+            }
+            //when driving backwards, reverse leading and trailing
+            //left front is now trailing, left back is now leading
+            //trailing gets full power
+            driveLeftFront.setPower(-leftPower);
+            driveLeftBack.setPower(-.95 * leftPower);       //creates belt tension between the drive pulleys
+            driveRightFront.setPower(-rightPower);
+            driveRightBack.setPower(-.95 * rightPower);
+
+
+        }
+        while (EncErrorLeft > 0                   //the error is slowly decreasing, so run while greater than 0
+                && this.getRuntime() < 10 && this.opModeIsActive());         //safety timeout of 17 seconds
+
+
+        telemetry.addData("DRIVE STRAIGHT PROPORTIONAL BACKWARDS DONE", telemetryVariable);
+
+    }
+
+    void proportionalLineFollowForDistanceWithACORNRightSideOfLineRightSideSensor(double distance, double midPower) {
+        /*
+         * How to use this method:
+         *  Programmer inputs distance and midpower
+         *      Distance = INCREMENTAL distance that you wish to have the robot run this time
+         *      MidPower = the desired midpower that you wish to have the robot run with
+         * This follows the line with the sensor on the right side of the right side of the robot
+         *
+         * Drive backwards a desired distance while following the right side of the white line
+         */
+
+        telemetry.clearData();      //clear all telemetry data before starting
+
+        driveGainODS = 0.005;           //gain for proportional control
+
+        targetDistance = distance;              //drive straight given inches from parameter
+
+        //math for target encoder counts to travel
+        rotations = targetDistance / circumference;
+        targetEncoderCounts = (int) (encoderCountsPerRotation * rotations); //casts the target encoder counts as an integer
+
+        //resets start time before starting the drive
+        this.resetStartTime();
+
+        //takes the initial position of the encoders to establish a starting point for the distance
+        initialEncCountLeft = driveLeftBack.getCurrentPosition();
+        initialEncCountRight = driveRightBack.getCurrentPosition();
+
+
+        do {
+            spin.setPower(1);  // Eject debris while driving, to clear path
+
+            currentEncDeltaCountLeft = driveLeftBack.getCurrentPosition() - initialEncCountLeft;         //the current - initial will give the
+            currentEncDeltaCountRight = driveRightBack.getCurrentPosition() - initialEncCountRight;      //current distance of the encoders
+
+
+            EncErrorLeft = targetEncoderCounts - Math.abs(currentEncDeltaCountLeft);                     //the error is the delta between the target counts and current counts
+
+
+            //telemetry for encoder information
+            telemetry.addData("EncErrorLeft = ", EncErrorLeft);
+            telemetry.addData("Left Encoder: ", currentEncDeltaCountLeft);
+
+            //telemetry for the distance travelled (IN INCHES)
+            currentDistance = (currentEncDeltaCountLeft * circumference) / encoderCountsPerRotation;
+            telemetry.addData("Calculated current distance: ", currentDistance);
+
+
+            rawDetectedLight = floorODS.getLightDetectedRaw();
+
+            proportionalODSError = DESIREDLINEFOLLOWNUMBER - rawDetectedLight; //lets say more white, this would be -
+
+            driveSteering = proportionalODSError * driveGainODS; //this would be -
+
+            leftPower = midPower + driveSteering;                           //This allows the right side of the robot to move at a constant speed
+            rightPower = midPower;                                          //left side is the one that gets altered with the driving
+            if (leftPower > 1.0) {                                         //Addition because need to decrease power when more white is seen
+                leftPower = 1.0;
+            }
+            if (leftPower < 0.2) {
+                leftPower = 0.2;
+            }
+            //when driving backwards, reverse leading and trailing
+            //left front is now trailing, left back is now leading
+            //trailing gets full power
+            driveLeftFront.setPower(-leftPower);
+            driveLeftBack.setPower(-.95 * leftPower);       //creates belt tension between the drive pulleys
+            driveRightFront.setPower(-rightPower);
+            driveRightBack.setPower(-.95 * rightPower);
+
+
+        }
+        while (EncErrorLeft > 0                   //the error is slowly decreasing, so run while greater than 0
+                && this.getRuntime() < 10 && this.opModeIsActive());         //safety timeout of 17 seconds
+
+
+        telemetry.addData("DRIVE STRAIGHT PROPORTIONAL BACKWARDS DONE", telemetryVariable);
+
+    }
+
+    void proportionalLineFollowForDistanceWithACORNLeftSideOfLineRightSideSensor(double distance, double midPower) {
+        /*
+         * How to use this method:
+         *  Programmer inputs distance and midpower
+         *      Distance = INCREMENTAL distance that you wish to have the robot run this time
+         *      MidPower = the desired midpower that you wish to have the robot run with
+         * This follows the line with the sensor on the left side of the line, right side sensor of the robot
+         *
+         * Drive backwards a desired distance while following the left side of the white line
+         */
+
+        telemetry.clearData();      //clear all telemetry data before starting
+
+        driveGainODS = 0.005;           //gain for proportional control
+
+        targetDistance = distance;              //drive straight given inches from parameter
+
+        //math for target encoder counts to travel
+        rotations = targetDistance / circumference;
+        targetEncoderCounts = (int) (encoderCountsPerRotation * rotations); //casts the target encoder counts as an integer
+
+        //resets start time before starting the drive
+        this.resetStartTime();
+
+        //takes the initial position of the encoders to establish a starting point for the distance
+        initialEncCountLeft = driveLeftBack.getCurrentPosition();
+        initialEncCountRight = driveRightBack.getCurrentPosition();
+
+
+        do {
+            spin.setPower(1);  // Eject debris while driving, to clear path
+
+            currentEncDeltaCountLeft = driveLeftBack.getCurrentPosition() - initialEncCountLeft;         //the current - initial will give the
+            currentEncDeltaCountRight = driveRightBack.getCurrentPosition() - initialEncCountRight;      //current distance of the encoders
+
+
+            EncErrorLeft = targetEncoderCounts - Math.abs(currentEncDeltaCountLeft);                     //the error is the delta between the target counts and current counts
+
+
+            //telemetry for encoder information
+            telemetry.addData("EncErrorLeft = ", EncErrorLeft);
+            telemetry.addData("Left Encoder: ", currentEncDeltaCountLeft);
+
+            //telemetry for the distance travelled (IN INCHES)
+            currentDistance = (currentEncDeltaCountLeft * circumference) / encoderCountsPerRotation;
+            telemetry.addData("Calculated current distance: ", currentDistance);
+
+
+            rawDetectedLight = floorODS.getLightDetectedRaw();
+
+            proportionalODSError = DESIREDLINEFOLLOWNUMBER - rawDetectedLight; //lets say more white, this would be -
+
+            driveSteering = proportionalODSError * driveGainODS; //this would be -
+
+            leftPower = midPower - driveSteering;                           //This allows the right side of the robot to move at a constant speed
+            rightPower = midPower;                                          //left side is the one that gets altered with the driving
+            if (leftPower > 1.0) {                                         //Addition because need to decrease power when more white is seen
+                leftPower = 1.0;
+            }
+            if (leftPower < 0.2) {
+                leftPower = 0.2;
             }
             //when driving backwards, reverse leading and trailing
             //left front is now trailing, left back is now leading

@@ -102,7 +102,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
  */
 
 
-public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode {
+public class Worlds_9804_Auto_BLUE_DELAY_RobotParallelToLine_Ax10 extends LinearOpMode {
 
 
     /**
@@ -215,6 +215,7 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
     double currentDistance;                 //the calculated distance we have travelled
     int currentEncDeltaCountLeft;           //the change (delta) for the left encoder
     int currentEncDeltaCountRight;          //the change (delta) for the right encoder
+    double driveGain;
 
 
     double targetDistance;                      //magnitude in distance
@@ -227,7 +228,6 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
     int telemetryVariable;                      // a NULL telemetry variable designed to diplay text only
     int initialEncCountLeft;                    //initial encoder counts of the left encoder
     int initialEncCountRight;                   //initial encoder counts of the right encoder
-    double driveGain;
 
 
     //ODS VARIABLES
@@ -354,6 +354,13 @@ public class Worlds_9804_Auto_BLUE_RobotParallelToLine_Ax10 extends LinearOpMode
             // de-energize the servos when stop button is pressed
             servoControllerWhite.pwmDisable();
             servoControllerPink.pwmDisable();
+
+            //step 0.5
+
+            this.resetStartTime();                  //WAIT FOR PARTNER TO DO AUTO
+            while (this.getRuntime() < 10){
+                waitOneFullHardwareCycle();
+            }
 
             //step 1
             driveStraightBackwards(0, 48, 0.8); //24 inches because the robot is located on the second tile and needs a shorter distance to get the correct angle
