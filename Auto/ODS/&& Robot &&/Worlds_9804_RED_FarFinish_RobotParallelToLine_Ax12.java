@@ -527,7 +527,7 @@ public class Worlds_9804_RED_FarFinish_RobotParallelToLine_Ax12 extends LinearOp
 
             //far finish
             currentHeading = gyro.getIntegratedZValue();
-            driveStraightBackwards(currentHeading, 60, 0.8);
+            driveStraightForwards(currentHeading, 60, 0.8);
 
             // de-energize the servos
             servoControllerWhite.pwmDisable();

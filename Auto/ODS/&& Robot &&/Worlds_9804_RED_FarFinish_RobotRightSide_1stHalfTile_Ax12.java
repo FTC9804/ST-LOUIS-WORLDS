@@ -504,7 +504,7 @@ public class Worlds_9804_RED_FarFinish_RobotRightSide_1stHalfTile_Ax12 extends L
 
             //step 12
             currentHeading = gyro.getIntegratedZValue();
-            driveStraightBackwards(currentHeading, 60, 0.8);
+            driveStraightForwards(currentHeading, 60, 0.8);
 
 
             //step 13
