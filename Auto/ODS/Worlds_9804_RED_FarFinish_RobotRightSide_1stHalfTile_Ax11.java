@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
  * FTC Team 9804 Bomb Squad -- Autonomous
  * Made by the programmers of FTC Team 9804 Bomb Squad
  * Ax10 4-25-16 at 7:52 pm Steve -- introduce ax10 with new movement for red
- * Ax11 4-27-16 at 12:47 pm Steve -- code updated with competition updates; delay factor
+ * Ax11 4-27-16 at 12:47 pm Steve -- code updated with competition updates; far finish with 5 feet straight forwards
  *
  *
  * ~~~~SETUP_(VERSION Tx21)~~~~
@@ -20,11 +20,10 @@ import com.qualcomm.robotcore.hardware.ServoController;
  * ~~~~~~~~~MOVEMENT Ax41 (RED!!!)~~~~~~~~~
  * -All the steps correspond to actual steps in the op mode
  * -Continue using setup version Tx21
- * (D) Delay the robot for 10 seconds before the auto period begins to allow the partner to score
  * (0) Disable all servo controllers so that they are not draining energy while the robot is powered
  * (1) Drive straight backwards from wall at a 0 degree angle. (When initializing the gyro, 0 degrees is set)
  * (2) spin move counter clockwise 45º
- * (3) drive straight backwards high speed for 45 inches
+ * (3) drive straight backwards high speed for 24 inches
  * (4.1) drive until red line is seen at medium-low speed
  * (4.2) stop motors, set current value to red threshold
  * (4.3) drive until white line is seen at medium-low speed
@@ -40,6 +39,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
  * (10) ACORN proportional line follow for 15 inches
  * (10.5) enable the servo controller that hosts the shelterDrop servo
  * (11) score shelter drop
+ * (12) drive forwards 5 feet
  * (12) code complete!
  *
  * NOTES:
@@ -102,7 +102,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
  */
 
 
-public class Worlds_9804_RED_DELAY_RobotRightSide_2ndHalfTile_Ax11 extends LinearOpMode {
+public class Worlds_9804_RED_FarFinish_RobotRightSide_1stHalfTile_Ax11 extends LinearOpMode {
 
 
     /**
@@ -351,12 +351,6 @@ public class Worlds_9804_RED_DELAY_RobotRightSide_2ndHalfTile_Ax11 extends Linea
              * Each step refers to the steps in the movement from Tx40
              */
 
-            //step delay
-            resetStartTime();
-            while (this.getRuntime() < 10) {
-                waitOneFullHardwareCycle();
-            }
-
             //step 0
             // de-energize the servos when stop button is pressed
             servoControllerWhite.pwmDisable();
@@ -381,7 +375,7 @@ public class Worlds_9804_RED_DELAY_RobotRightSide_2ndHalfTile_Ax11 extends Linea
             waitOneFullHardwareCycle();
 
             //step 3
-            driveStraightBackwards(45, 45, 0.9);
+            driveStraightBackwards(45, 24, 0.9);
 
             waitOneFullHardwareCycle();
 
@@ -510,7 +504,11 @@ public class Worlds_9804_RED_DELAY_RobotRightSide_2ndHalfTile_Ax11 extends Linea
             waitOneFullHardwareCycle();
 
             //step 12
+            currentHeading = gyro.getIntegratedZValue();
+            driveStraightBackwards(currentHeading, 60, 0.8);
 
+
+            //step 13
             // de-energize the servos
             servoControllerWhite.pwmDisable();
             servoControllerPink.pwmDisable();

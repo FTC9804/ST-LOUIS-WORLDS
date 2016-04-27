@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
  * FTC Team 9804 Bomb Squad -- Autonomous
  * Made by the programmers of FTC Team 9804 Bomb Squad
  * Ax10 4-25-16 at 7:52 pm Steve -- introduce ax10 with new movement for red
- * Ax11 4-27-16 at 12:47 pm Steve -- code updated with competition updates; delay factor
+ * Ax11 4-27-16 at 12:47 pm Steve -- code updated with competition updates
  *
  *
  * ~~~~SETUP_(VERSION Tx21)~~~~
@@ -20,11 +20,10 @@ import com.qualcomm.robotcore.hardware.ServoController;
  * ~~~~~~~~~MOVEMENT Ax41 (RED!!!)~~~~~~~~~
  * -All the steps correspond to actual steps in the op mode
  * -Continue using setup version Tx21
- * (D) Delay the robot for 10 seconds before the auto period begins to allow the partner to score
  * (0) Disable all servo controllers so that they are not draining energy while the robot is powered
  * (1) Drive straight backwards from wall at a 0 degree angle. (When initializing the gyro, 0 degrees is set)
  * (2) spin move counter clockwise 45º
- * (3) drive straight backwards high speed for 45 inches
+ * (3) drive straight backwards high speed for 24 inches
  * (4.1) drive until red line is seen at medium-low speed
  * (4.2) stop motors, set current value to red threshold
  * (4.3) drive until white line is seen at medium-low speed
@@ -102,7 +101,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
  */
 
 
-public class Worlds_9804_RED_DELAY_RobotRightSide_2ndHalfTile_Ax11 extends LinearOpMode {
+public class Worlds_9804_RED_RobotRightSide_1stHalfTile_Ax11 extends LinearOpMode {
 
 
     /**
@@ -351,19 +350,13 @@ public class Worlds_9804_RED_DELAY_RobotRightSide_2ndHalfTile_Ax11 extends Linea
              * Each step refers to the steps in the movement from Tx40
              */
 
-            //step delay
-            resetStartTime();
-            while (this.getRuntime() < 10) {
-                waitOneFullHardwareCycle();
-            }
-
             //step 0
             // de-energize the servos when stop button is pressed
             servoControllerWhite.pwmDisable();
             servoControllerPink.pwmDisable();
 
             //step 1
-            driveStraightBackwards(0, 24, 0.8);
+            driveStraightBackwards(0, 36, 0.8);
 
             waitOneFullHardwareCycle();
 
@@ -381,7 +374,7 @@ public class Worlds_9804_RED_DELAY_RobotRightSide_2ndHalfTile_Ax11 extends Linea
             waitOneFullHardwareCycle();
 
             //step 3
-            driveStraightBackwards(45, 45, 0.9);
+            driveStraightBackwards(45, 24, 0.9);
 
             waitOneFullHardwareCycle();
 

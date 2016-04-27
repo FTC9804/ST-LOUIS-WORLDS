@@ -374,7 +374,7 @@ public class Worlds_9804_RED_RobotRightSide_2ndHalfTile_Ax11 extends LinearOpMod
             waitOneFullHardwareCycle();
 
             //step 3
-            driveStraightBackwards(45, 72, 0.9);
+            driveStraightBackwards(45, 45, 0.9);
 
             waitOneFullHardwareCycle();
 

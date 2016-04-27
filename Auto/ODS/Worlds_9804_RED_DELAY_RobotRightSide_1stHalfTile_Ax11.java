@@ -24,7 +24,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
  * (0) Disable all servo controllers so that they are not draining energy while the robot is powered
  * (1) Drive straight backwards from wall at a 0 degree angle. (When initializing the gyro, 0 degrees is set)
  * (2) spin move counter clockwise 45º
- * (3) drive straight backwards high speed for 45 inches
+ * (3) drive straight backwards high speed for 24 inches
  * (4.1) drive until red line is seen at medium-low speed
  * (4.2) stop motors, set current value to red threshold
  * (4.3) drive until white line is seen at medium-low speed
@@ -102,7 +102,7 @@ import com.qualcomm.robotcore.hardware.ServoController;
  */
 
 
-public class Worlds_9804_RED_DELAY_RobotRightSide_2ndHalfTile_Ax11 extends LinearOpMode {
+public class Worlds_9804_RED_DELAY_RobotRightSide_1stHalfTile_Ax11 extends LinearOpMode {
 
 
     /**
@@ -381,7 +381,7 @@ public class Worlds_9804_RED_DELAY_RobotRightSide_2ndHalfTile_Ax11 extends Linea
             waitOneFullHardwareCycle();
 
             //step 3
-            driveStraightBackwards(45, 45, 0.9);
+            driveStraightBackwards(45, 24, 0.9);
 
             waitOneFullHardwareCycle();
 
